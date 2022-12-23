@@ -15,3 +15,6 @@
 # vendor/
 
 cmd/local_build
+logs/
+.idea
+.DS_Store

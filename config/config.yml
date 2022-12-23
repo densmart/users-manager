@@ -1,0 +1,16 @@
+# logger settings
+logger:
+  level: ${LOG_LEVEL:trace}
+  max_size: ${LOG_MAX_SIZE:100} # mb
+  backups_count: ${LOG_BACKUPS_COUNT:10}
+  max_age: ${LOG_MAX_AGE:1} # days
+  file: ${LOG_FILE:logs/main.log}
+
+# Database connection settings
+db:
+  username: ${POSTGRES_USER:postgres}
+  host: ${POSTGRES_HOST:localhost}
+  port: ${POSTGRES_PORT:5432}
+  dbname: ${POSTGRES_DB:dbname}
+  password: ${POSTGRES_PASSWORD:secretpassword}
+  sslMode: "disable"

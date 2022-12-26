@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"github.com/densmart/users-manager/internal/adapters/db"
+	"github.com/densmart/users-manager/internal/domain/repo"
+	"github.com/densmart/users-manager/internal/domain/services"
 	"github.com/densmart/users-manager/pkg"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -36,6 +38,17 @@ func main() {
 	})
 	if err != nil {
 		logrus.Fatalf("error starting DB: %s", err.Error())
+	}
+
+	// create new repo instance
+	r := repo.NewRepo(dbWrapper)
+
+	// initialize services
+	s := services.NewService(r)
+
+	// run migrations
+	if err = s.Migrator.Up(); err != nil {
+		logrus.Fatalf("error DB migrate: %s", err.Error())
 	}
 
 	// catch term OS signal

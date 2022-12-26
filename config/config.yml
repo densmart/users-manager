@@ -14,3 +14,9 @@ db:
   dbname: ${POSTGRES_DB:dbname}
   password: ${POSTGRES_PASSWORD:secretpassword}
   sslMode: "disable"
+
+rest:
+  port: ${REST_PORT:8080}
+  readTimeout: ${REST_READ_TIMEOUT:15} # seconds
+  writeTimeout: ${REST_WRITE_TIMEOUT:15} # seconds
+  maxHeaderBytes: ${REST_MAX_HEADER_BYTES:1048576} # 1mb

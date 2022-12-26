@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/densmart/users-manager/internal/adapters/api/rest"
 	"github.com/densmart/users-manager/internal/adapters/db"
 	"github.com/densmart/users-manager/internal/domain/repo"
 	"github.com/densmart/users-manager/internal/domain/services"
@@ -50,6 +51,16 @@ func main() {
 	if err = s.Migrator.Up(); err != nil {
 		logrus.Fatalf("error DB migrate: %s", err.Error())
 	}
+
+	// initialize REST (router & server)
+	restRouter := rest.NewRestRouter(s)
+	restServer := rest.NewRestServer(restRouter.InitRoutes())
+	// start REST http server
+	go func() {
+		if err = restServer.Run(); err != nil {
+			logrus.Errorf("error starting HTTP server: %s", err.Error())
+		}
+	}()
 
 	// catch term OS signal
 	quit := make(chan os.Signal, 1)

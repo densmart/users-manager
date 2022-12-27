@@ -1,10 +1,9 @@
-package repo
+package services
 
 import (
-	"github.com/densmart/users-manager/internal/adapters/db"
-	"github.com/densmart/users-manager/internal/adapters/db/postgres"
 	"github.com/densmart/users-manager/internal/adapters/dto"
 	"github.com/densmart/users-manager/internal/domain/entities"
+	"github.com/densmart/users-manager/internal/domain/repo"
 )
 
 type Migrator interface {
@@ -20,14 +19,14 @@ type Roles interface {
 	Delete(id uint64) error
 }
 
-type Repo struct {
+type Service struct {
 	Migrator
 	Roles
 }
 
-func NewRepo(db *db.WrapperDB) *Repo {
-	return &Repo{
-		Migrator: postgres.NewMigratorPostgres(db),
-		Roles:    postgres.NewRolesPostgres(db),
+func NewService(repo *repo.Repo) *Service {
+	return &Service{
+		Migrator: NewMigratorService(repo.Migrator),
+		Roles:    NewRolesService(repo.Roles),
 	}
 }

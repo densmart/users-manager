@@ -7,11 +7,11 @@ import (
 )
 
 type RestRouter struct {
-	services *services.Service
+	service *services.Service
 }
 
-func NewRestRouter(services *services.Service) *RestRouter {
-	return &RestRouter{services: services}
+func NewRestRouter(service *services.Service) *RestRouter {
+	return &RestRouter{service: service}
 }
 
 func (h *RestRouter) InitRoutes() *gin.Engine {
@@ -20,6 +20,15 @@ func (h *RestRouter) InitRoutes() *gin.Engine {
 	router.GET("/ping", func(c *gin.Context) {
 		c.String(http.StatusOK, "PONG")
 	})
+
+	roles := router.Group("/roles", h.JWTAuthMiddleware)
+	{
+		roles.POST("/", h.createRole)
+		roles.GET("/:id", h.retrieveRole)
+		roles.GET("/", h.searchRoles)
+		roles.PATCH("/", h.updateRole)
+		roles.DELETE("/", h.deleteRole)
+	}
 
 	return router
 }

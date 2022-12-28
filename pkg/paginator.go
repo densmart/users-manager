@@ -4,6 +4,7 @@ import (
 	"github.com/densmart/users-manager/internal/adapters/dto"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -46,6 +47,25 @@ func (p *Paginator) ToRepresentation() dto.PaginationInfo {
 		Next:    p.MakeNextLink(),
 		Prev:    p.MakePrevLink(),
 	}
+}
+
+func (p *Paginator) ToLinkHeader() string {
+	var link []string
+
+	if p.MakeNextLink() != "" {
+		link = append(link, "<"+p.MakeNextLink()+">; rel=\"next\"")
+	}
+	if p.MakePrevLink() != "" {
+		link = append(link, "<"+p.MakePrevLink()+">; rel=\"prev\"")
+	}
+	if p.MakeFirstLink() != "" {
+		link = append(link, "<"+p.MakeFirstLink()+">; rel=\"first\"")
+	}
+	if p.MakeLastLink() != "" {
+		link = append(link, "<"+p.MakeLastLink()+">; rel=\"last\"")
+	}
+
+	return strings.Join(link[:], ",\n")
 }
 
 func (p *Paginator) GetOffset() uint {
@@ -103,4 +123,12 @@ func (p *Paginator) MakePrevLink() string {
 		return r.ReplaceAllString(p.RawURL, "&page="+strconv.Itoa(prevItem))
 	}
 	return ""
+}
+
+func (p *Paginator) MakeFirstLink() string {
+	return p.RawURL + "&page=1"
+}
+
+func (p *Paginator) MakeLastLink() string {
+	return p.RawURL + "&page=" + strconv.Itoa(int(p.GetTotalPages()))
 }

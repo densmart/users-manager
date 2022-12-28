@@ -30,6 +30,6 @@ type RoleDTO struct {
 }
 
 type RolesDTO struct {
-	Pagination PaginationInfo `json:"pagination"`
-	Items      []RoleDTO      `json:"items"`
+	Pagination string    `json:"pagination"`
+	Items      []RoleDTO `json:"items"`
 }

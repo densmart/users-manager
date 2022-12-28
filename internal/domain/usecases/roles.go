@@ -7,10 +7,13 @@ import (
 	"time"
 )
 
-func CreateRole(s services.Service, data dto.CreateRoleDTO) (*dto.RoleDTO, error) {
+func CreateRole(s services.Service, data dto.CreateRoleDTO) (*dto.RoleDTO, *APIError) {
 	role, err := s.Roles.Create(data)
 	if err != nil {
-		return nil, err
+		return nil, &APIError{
+			HttpCode: 400,
+			Message:  err.Error(),
+		}
 	}
 	response := dto.RoleDTO{
 		ID:          role.Id,
@@ -65,7 +68,7 @@ func SearchRoles(s services.Service, data dto.SearchRoleDTO) (*dto.RolesDTO, err
 	}
 
 	response := dto.RolesDTO{
-		Pagination: paginator.ToRepresentation(),
+		Pagination: paginator.ToLinkHeader(),
 	}
 	for _, role := range roles {
 		roleDTO := dto.RoleDTO{

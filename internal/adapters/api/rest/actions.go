@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"errors"
 	"github.com/densmart/users-manager/internal/adapters/dto"
 	"github.com/densmart/users-manager/internal/domain/usecases"
 	"github.com/gin-gonic/gin"
@@ -10,6 +11,7 @@ import (
 )
 
 func (h *RestRouter) createAction(c *gin.Context) {
+	var apiErr *dto.APIError
 	var data dto.CreateActionDTO
 
 	if err := c.BindJSON(&data); err != nil {
@@ -19,7 +21,10 @@ func (h *RestRouter) createAction(c *gin.Context) {
 
 	result, err := usecases.CreateAction(*h.service, data)
 	if err != nil {
-		ErrorResponse(c, err.HttpCode, err.Error())
+		if errors.As(err, &apiErr) {
+			ErrorResponse(c, apiErr.HttpCode, err.Error())
+		}
+		ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -27,6 +32,7 @@ func (h *RestRouter) createAction(c *gin.Context) {
 }
 
 func (h *RestRouter) retrieveAction(c *gin.Context) {
+	var apiErr *dto.APIError
 	actionID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		ErrorResponse(c, http.StatusBadRequest, "incorrect query string")
@@ -35,13 +41,17 @@ func (h *RestRouter) retrieveAction(c *gin.Context) {
 
 	result, err := usecases.RetrieveAction(*h.service, uint64(actionID))
 	if err != nil {
-		ErrorResponse(c, http.StatusNotFound, err.Error())
+		if errors.As(err, &apiErr) {
+			ErrorResponse(c, apiErr.HttpCode, err.Error())
+		}
+		ErrorResponse(c, http.StatusInternalServerError, err.Error())
 	}
 
 	SuccessResponse(c, result)
 }
 
 func (h *RestRouter) searchActions(c *gin.Context) {
+	var apiErr *dto.APIError
 	var data dto.SearchActionDTO
 
 	if err := c.ShouldBindWith(&data, binding.Form); err != nil {
@@ -53,6 +63,9 @@ func (h *RestRouter) searchActions(c *gin.Context) {
 
 	actions, err := usecases.SearchActions(*h.service, data)
 	if err != nil {
+		if errors.As(err, &apiErr) {
+			ErrorResponse(c, apiErr.HttpCode, err.Error())
+		}
 		ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -62,6 +75,7 @@ func (h *RestRouter) searchActions(c *gin.Context) {
 }
 
 func (h *RestRouter) updateAction(c *gin.Context) {
+	var apiErr *dto.APIError
 	var data dto.UpdateActionDTO
 
 	actionID, err := strconv.Atoi(c.Param("id"))
@@ -79,6 +93,9 @@ func (h *RestRouter) updateAction(c *gin.Context) {
 
 	action, err := usecases.UpdateAction(*h.service, data)
 	if err != nil {
+		if errors.As(err, &apiErr) {
+			ErrorResponse(c, apiErr.HttpCode, err.Error())
+		}
 		ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -87,6 +104,7 @@ func (h *RestRouter) updateAction(c *gin.Context) {
 }
 
 func (h *RestRouter) deleteAction(c *gin.Context) {
+	var apiErr *dto.APIError
 	actionID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		ErrorResponse(c, http.StatusBadRequest, "action ID not specified")
@@ -94,6 +112,9 @@ func (h *RestRouter) deleteAction(c *gin.Context) {
 	}
 
 	if err = usecases.DeleteAction(*h.service, uint64(actionID)); err != nil {
+		if errors.As(err, &apiErr) {
+			ErrorResponse(c, apiErr.HttpCode, err.Error())
+		}
 		ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}

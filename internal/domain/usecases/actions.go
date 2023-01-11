@@ -7,10 +7,10 @@ import (
 	"time"
 )
 
-func CreateAction(s services.Service, data dto.CreateActionDTO) (*dto.ActionDTO, *APIError) {
+func CreateAction(s services.Service, data dto.CreateActionDTO) (*dto.ActionDTO, *dto.APIError) {
 	action, err := s.Actions.Create(data)
 	if err != nil {
-		return nil, &APIError{
+		return nil, &dto.APIError{
 			HttpCode: 400,
 			Message:  err.Error(),
 		}

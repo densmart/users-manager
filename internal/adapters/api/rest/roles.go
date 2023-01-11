@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"errors"
 	"github.com/densmart/users-manager/internal/adapters/dto"
 	"github.com/densmart/users-manager/internal/domain/usecases"
 	"github.com/gin-gonic/gin"
@@ -10,6 +11,7 @@ import (
 )
 
 func (h *RestRouter) createRole(c *gin.Context) {
+	var apiErr *dto.APIError
 	var data dto.CreateRoleDTO
 
 	if err := c.BindJSON(&data); err != nil {
@@ -19,7 +21,11 @@ func (h *RestRouter) createRole(c *gin.Context) {
 
 	result, err := usecases.CreateRole(*h.service, data)
 	if err != nil {
-		ErrorResponse(c, err.HttpCode, err.Error())
+		if errors.As(err, &apiErr) {
+			ErrorResponse(c, apiErr.HttpCode, err.Error())
+			return
+		}
+		ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -27,6 +33,7 @@ func (h *RestRouter) createRole(c *gin.Context) {
 }
 
 func (h *RestRouter) retrieveRole(c *gin.Context) {
+	var apiErr *dto.APIError
 	roleID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		ErrorResponse(c, http.StatusBadRequest, "incorrect query string")
@@ -35,13 +42,18 @@ func (h *RestRouter) retrieveRole(c *gin.Context) {
 
 	result, err := usecases.RetrieveRole(*h.service, uint64(roleID))
 	if err != nil {
-		ErrorResponse(c, http.StatusNotFound, err.Error())
+		if errors.As(err, &apiErr) {
+			ErrorResponse(c, apiErr.HttpCode, err.Error())
+			return
+		}
+		ErrorResponse(c, http.StatusInternalServerError, err.Error())
 	}
 
 	SuccessResponse(c, result)
 }
 
 func (h *RestRouter) searchRoles(c *gin.Context) {
+	var apiErr *dto.APIError
 	var data dto.SearchRoleDTO
 
 	if err := c.ShouldBindWith(&data, binding.Form); err != nil {
@@ -53,6 +65,10 @@ func (h *RestRouter) searchRoles(c *gin.Context) {
 
 	roles, err := usecases.SearchRoles(*h.service, data)
 	if err != nil {
+		if errors.As(err, &apiErr) {
+			ErrorResponse(c, apiErr.HttpCode, err.Error())
+			return
+		}
 		ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -62,6 +78,7 @@ func (h *RestRouter) searchRoles(c *gin.Context) {
 }
 
 func (h *RestRouter) updateRole(c *gin.Context) {
+	var apiErr *dto.APIError
 	var data dto.UpdateRoleDTO
 
 	roleID, err := strconv.Atoi(c.Param("id"))
@@ -79,6 +96,10 @@ func (h *RestRouter) updateRole(c *gin.Context) {
 
 	role, err := usecases.UpdateRole(*h.service, data)
 	if err != nil {
+		if errors.As(err, &apiErr) {
+			ErrorResponse(c, apiErr.HttpCode, err.Error())
+			return
+		}
 		ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -87,6 +108,7 @@ func (h *RestRouter) updateRole(c *gin.Context) {
 }
 
 func (h *RestRouter) deleteRole(c *gin.Context) {
+	var apiErr *dto.APIError
 	roleID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		ErrorResponse(c, http.StatusBadRequest, "role ID not specified")
@@ -94,6 +116,10 @@ func (h *RestRouter) deleteRole(c *gin.Context) {
 	}
 
 	if err = usecases.DeleteRole(*h.service, uint64(roleID)); err != nil {
+		if errors.As(err, &apiErr) {
+			ErrorResponse(c, apiErr.HttpCode, err.Error())
+			return
+		}
 		ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}

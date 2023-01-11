@@ -7,13 +7,10 @@ import (
 	"time"
 )
 
-func CreateRole(s services.Service, data dto.CreateRoleDTO) (*dto.RoleDTO, *APIError) {
+func CreateRole(s services.Service, data dto.CreateRoleDTO) (*dto.RoleDTO, error) {
 	role, err := s.Roles.Create(data)
 	if err != nil {
-		return nil, &APIError{
-			HttpCode: 400,
-			Message:  err.Error(),
-		}
+		return nil, err
 	}
 	response := dto.RoleDTO{
 		ID:          role.Id,

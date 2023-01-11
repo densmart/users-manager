@@ -7,6 +7,7 @@ import (
 	"github.com/densmart/users-manager/internal/domain/entities"
 	"github.com/doug-martin/goqu/v9"
 	"github.com/jackc/pgconn"
+	"net/http"
 	"time"
 )
 
@@ -39,7 +40,10 @@ func (r *RolesPostgres) Create(data dto.CreateRoleDTO) (entities.Role, error) {
 	row := conn.QueryRow(r.db.Ctx, query)
 	if err = row.Scan(&role.Id, &role.CreatedAt, &role.Name, &role.Slug, &role.IsPermitted); err != nil {
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return role, errors.New("role slug already exists")
+			return role, &dto.APIError{
+				HttpCode: http.StatusConflict,
+				Message:  "role slug already exists",
+			}
 		}
 		return role, err
 	}

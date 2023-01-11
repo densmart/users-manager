@@ -21,31 +21,34 @@ func (h *RestRouter) InitRoutes() *gin.Engine {
 		c.String(http.StatusOK, "PONG")
 	})
 
-	roles := router.Group("/roles", h.JWTAuthMiddleware)
+	v1 := router.Group("/v1")
 	{
-		roles.POST("/", h.createRole)
-		roles.GET("/:id", h.retrieveRole)
-		roles.GET("/", h.searchRoles)
-		roles.PATCH("/", h.updateRole)
-		roles.DELETE("/", h.deleteRole)
-	}
+		roles := v1.Group("/roles", h.JWTAuthMiddleware)
+		{
+			roles.POST("/", h.createRole)
+			roles.GET("/:id", h.retrieveRole)
+			roles.GET("/", h.searchRoles)
+			roles.PATCH("/", h.updateRole)
+			roles.DELETE("/", h.deleteRole)
+		}
 
-	actions := router.Group("/actions", h.JWTAuthMiddleware)
-	{
-		actions.POST("/", h.createAction)
-		actions.GET("/:id", h.retrieveAction)
-		actions.GET("/", h.searchActions)
-		actions.PATCH("/", h.updateAction)
-		actions.DELETE("/", h.deleteAction)
-	}
+		actions := v1.Group("/actions", h.JWTAuthMiddleware)
+		{
+			actions.POST("/", h.createAction)
+			actions.GET("/:id", h.retrieveAction)
+			actions.GET("/", h.searchActions)
+			actions.PATCH("/", h.updateAction)
+			actions.DELETE("/", h.deleteAction)
+		}
 
-	resources := router.Group("/resources", h.JWTAuthMiddleware)
-	{
-		resources.POST("/", h.createResource)
-		resources.GET("/:id", h.retrieveResource)
-		resources.GET("/", h.searchResources)
-		resources.PATCH("/", h.updateResource)
-		resources.DELETE("/", h.deleteResource)
+		resources := v1.Group("/resources", h.JWTAuthMiddleware)
+		{
+			resources.POST("/", h.createResource)
+			resources.GET("/:id", h.retrieveResource)
+			resources.GET("/", h.searchResources)
+			resources.PATCH("/", h.updateResource)
+			resources.DELETE("/", h.deleteResource)
+		}
 	}
 
 	return router

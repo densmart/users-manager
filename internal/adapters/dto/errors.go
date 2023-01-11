@@ -1,7 +1,8 @@
-package usecases
+package dto
 
 type APIError struct {
 	HttpCode int
+	PgCode   string
 	Message  string
 }
 

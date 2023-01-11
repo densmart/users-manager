@@ -7,10 +7,10 @@ import (
 	"time"
 )
 
-func CreateResource(s services.Service, data dto.CreateResourceDTO) (*dto.ResourceDTO, *APIError) {
+func CreateResource(s services.Service, data dto.CreateResourceDTO) (*dto.ResourceDTO, *dto.APIError) {
 	resource, err := s.Resources.Create(data)
 	if err != nil {
-		return nil, &APIError{
+		return nil, &dto.APIError{
 			HttpCode: 400,
 			Message:  err.Error(),
 		}

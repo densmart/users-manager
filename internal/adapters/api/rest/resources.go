@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"errors"
 	"github.com/densmart/users-manager/internal/adapters/dto"
 	"github.com/densmart/users-manager/internal/domain/usecases"
 	"github.com/gin-gonic/gin"
@@ -10,6 +11,7 @@ import (
 )
 
 func (h *RestRouter) createResource(c *gin.Context) {
+	var apiErr *dto.APIError
 	var data dto.CreateResourceDTO
 
 	if err := c.BindJSON(&data); err != nil {
@@ -19,7 +21,10 @@ func (h *RestRouter) createResource(c *gin.Context) {
 
 	result, err := usecases.CreateResource(*h.service, data)
 	if err != nil {
-		ErrorResponse(c, err.HttpCode, err.Error())
+		if errors.As(err, &apiErr) {
+			ErrorResponse(c, apiErr.HttpCode, err.Error())
+		}
+		ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -27,6 +32,7 @@ func (h *RestRouter) createResource(c *gin.Context) {
 }
 
 func (h *RestRouter) retrieveResource(c *gin.Context) {
+	var apiErr *dto.APIError
 	resourceID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		ErrorResponse(c, http.StatusBadRequest, "incorrect query string")
@@ -35,13 +41,17 @@ func (h *RestRouter) retrieveResource(c *gin.Context) {
 
 	result, err := usecases.RetrieveResource(*h.service, uint64(resourceID))
 	if err != nil {
-		ErrorResponse(c, http.StatusNotFound, err.Error())
+		if errors.As(err, &apiErr) {
+			ErrorResponse(c, apiErr.HttpCode, err.Error())
+		}
+		ErrorResponse(c, http.StatusInternalServerError, err.Error())
 	}
 
 	SuccessResponse(c, result)
 }
 
 func (h *RestRouter) searchResources(c *gin.Context) {
+	var apiErr *dto.APIError
 	var data dto.SearchResourceDTO
 
 	if err := c.ShouldBindWith(&data, binding.Form); err != nil {
@@ -53,6 +63,9 @@ func (h *RestRouter) searchResources(c *gin.Context) {
 
 	resources, err := usecases.SearchResources(*h.service, data)
 	if err != nil {
+		if errors.As(err, &apiErr) {
+			ErrorResponse(c, apiErr.HttpCode, err.Error())
+		}
 		ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -62,6 +75,7 @@ func (h *RestRouter) searchResources(c *gin.Context) {
 }
 
 func (h *RestRouter) updateResource(c *gin.Context) {
+	var apiErr *dto.APIError
 	var data dto.UpdateResourceDTO
 
 	resourceID, err := strconv.Atoi(c.Param("id"))
@@ -79,6 +93,9 @@ func (h *RestRouter) updateResource(c *gin.Context) {
 
 	resource, err := usecases.UpdateResource(*h.service, data)
 	if err != nil {
+		if errors.As(err, &apiErr) {
+			ErrorResponse(c, apiErr.HttpCode, err.Error())
+		}
 		ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -87,6 +104,7 @@ func (h *RestRouter) updateResource(c *gin.Context) {
 }
 
 func (h *RestRouter) deleteResource(c *gin.Context) {
+	var apiErr *dto.APIError
 	resourceID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		ErrorResponse(c, http.StatusBadRequest, "resource ID not specified")
@@ -94,6 +112,9 @@ func (h *RestRouter) deleteResource(c *gin.Context) {
 	}
 
 	if err = usecases.DeleteResource(*h.service, uint64(resourceID)); err != nil {
+		if errors.As(err, &apiErr) {
+			ErrorResponse(c, apiErr.HttpCode, err.Error())
+		}
 		ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}

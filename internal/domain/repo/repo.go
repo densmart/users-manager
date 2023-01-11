@@ -20,14 +20,34 @@ type Roles interface {
 	Delete(id uint64) error
 }
 
+type Actions interface {
+	Create(data dto.CreateActionDTO) (entities.Action, error)
+	Update(data dto.UpdateActionDTO) (entities.Action, error)
+	Retrieve(id uint64) (entities.Action, error)
+	Search(data dto.SearchActionDTO) ([]entities.Action, error)
+	Delete(id uint64) error
+}
+
+type Resources interface {
+	Create(data dto.CreateResourceDTO) (entities.Resource, error)
+	Update(data dto.UpdateResourceDTO) (entities.Resource, error)
+	Retrieve(id uint64) (entities.Resource, error)
+	Search(data dto.SearchResourceDTO) ([]entities.Resource, error)
+	Delete(id uint64) error
+}
+
 type Repo struct {
 	Migrator
 	Roles
+	Actions
+	Resources
 }
 
 func NewRepo(db *db.WrapperDB) *Repo {
 	return &Repo{
-		Migrator: postgres.NewMigratorPostgres(db),
-		Roles:    postgres.NewRolesPostgres(db),
+		Migrator:  postgres.NewMigratorPostgres(db),
+		Roles:     postgres.NewRolesPostgres(db),
+		Actions:   postgres.NewActionsPostgres(db),
+		Resources: postgres.NewResourcesPostgres(db),
 	}
 }

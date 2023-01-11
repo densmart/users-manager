@@ -1,0 +1,1305 @@
+openapi: 3.0.3
+info:
+  title: PSPCore Users
+  description: |-
+    PSPCore users management
+    Using for authorization in psp core admin page (backoffice), 
+    access control (RBAC), users action journaling
+  version: 0.0.1
+
+servers:
+  - url: http://localhost:7979
+  - url: https://some.outer.api.com:8081/
+
+tags:
+  - name: auth
+    description: System authorizatoin methods
+  - name: profile
+    description: User self-management endpoints
+  - name: user
+    description: Users CRUD operations + additional (password recovery, etc)
+  - name: role
+    description: Roles CRUD operations
+  - name: action
+    description: Actions CRUD operations
+  - name: resource
+    description: Resources CRUD operations
+  - name: journal
+    description: Add/View actions with user activity journal
+
+paths:
+# auth methods
+# ------------
+  /auth/login:
+    post:
+      tags:
+        - auth
+      summary: User authentication
+      description: Check user's login/password pair
+      operationId: authLogin
+      requestBody:
+        description: User's login/password pair
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserAuthData'
+        '400':
+          description: Invalid request
+        '401':
+          description: Need two factor authorization
+        '403':
+          description: User access denied (user inactive)
+        '404':
+          description: User not found
+  /auth/2fa:
+    post:
+      tags:
+        - auth
+      summary: User two factor authentication
+      description: Check user OTP key (2FA token)
+      operationId: auth2fa
+      requestBody:
+        description: User's 2FA token
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TwoFaRequest'
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserAuthData'
+        '400':
+          description: Invalid request
+        '403':
+          description: Access denied (wrong code)
+        '404':
+          description: User not found
+# profile endpoints
+# -----------------
+  /profile/{user_id}:
+    patch:
+      tags:
+        - profile
+      summary: Edit user info 
+      description: Self edit info about user (phone, 2FA, etc...)
+      operationId: profileEdit
+      parameters:
+        - name: user_id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: User's info
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Profile'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '400':
+          description: Invalid input
+        '404':
+          description: User not found
+      security:
+        - bearerAuth: []
+  /profile/{user_id}/recovery:
+    post:
+      tags:
+        - profile
+      summary: User password recovery 
+      description: Generate new temp password and resend activation email
+      operationId: profileRecovery
+      parameters:
+        - name: user_id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: User's 2FA token
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecoveryRequest'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '400':
+          description: Invalid input
+        '404':
+          description: User not found
+      security:
+        - bearerAuth: []
+# users endpoints
+# ---------------
+  /users:
+    post:
+      tags:
+        - user
+      summary: Create a new user
+      description: Create a new system user
+      operationId: addUser
+      requestBody:
+        description: Create a new user in the system
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddUser'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUser'          
+        '400':
+          description: Invalid input
+      security:
+        - bearerAuth: []
+    get:
+      tags:
+        - user
+      summary: List users with filters
+      description: Search users by parameters
+      operationId: listUsers
+      parameters:
+        - name: id
+          in: query
+          description: User ID (full equal)
+          required: false
+          schema:
+            type: integer
+        - name: name
+          in: query
+          description: User first or last name (partial equal)
+          required: false
+          schema:
+            type: string
+        - name: email
+          in: query
+          description: User email (full equal)
+          required: false
+          schema:
+            type: string
+        - name: phone
+          in: query
+          description: User phone (partial equal)
+          required: false
+          schema:
+            type: string
+        - name: is_active
+          in: query
+          description: Active users only filter
+          required: false
+          schema:
+            type: boolean
+        - name: is_2fa
+          in: query
+          description: 2FA enabled users only filter
+          required: false
+          schema:
+            type: boolean
+        - name: role_id
+          in: query
+          description: Find users by Role ID (full equal)
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetUser'          
+        '400':
+          description: Invalid status value
+      security:
+        - bearerAuth: []
+  /users/{user_id}:
+    get:
+      tags:
+        - user
+      summary: User info
+      description: View information about user
+      operationId: findUser
+      parameters:
+        - name: user_id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUser'          
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: User not found
+      security:
+        - bearerAuth: []
+    patch:
+      tags:
+        - user
+      summary: Update user
+      description: Update user params
+      operationId: updateUser
+      parameters:
+        - name: user_id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Create a new user in the system
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddUser'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUser'          
+        '400':
+          description: Invalid input
+        '404':
+          description: User not found
+      security:
+        - bearerAuth: []
+    delete:
+      tags:
+        - user
+      summary: Delete user
+      description: Complete delete user (work only for new users)
+      operationId: deleteUser
+      parameters:
+        - name: user_id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '400':
+          description: Invalid input
+        '404':
+          description: User not found
+      security:
+        - bearerAuth: []
+  /users/{user_id}/renew:
+    post:
+      tags:
+        - user
+      summary: Renew user info
+      description: Reset user password, 2fa token (if set) and send activation email. New password and token generates automatically
+      operationId: renewUser
+      parameters:
+        - name: user_id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Successful renew
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUser'
+        '400':
+          description: Invalid input
+        '404':
+          description: User not found
+      security:
+        - bearerAuth: []
+
+# roles endpoints
+# ---------------
+  /roles:
+    post:
+      tags:
+        - role
+      summary: Create role
+      description: Create new role
+      operationId: createRole
+      requestBody:
+        description: Create a new role in the system
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddRole'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetRole'          
+        '400':
+          description: Invalid input
+      security:
+        - bearerAuth: []
+    get:
+      tags:
+        - role
+      summary: Search roles
+      description: Search roles by filters
+      operationId: listRoles
+      parameters:
+        - name: id
+          in: query
+          description: Role ID (full equal)
+          required: false
+          schema:
+            type: integer
+        - name: name
+          in: query
+          description: Role name (partial equal)
+          required: false
+          schema:
+            type: string
+        - name: is_permitted
+          in: query
+          description: Permitted roles only filter
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetRole'          
+        '400':
+          description: Invalid request
+      security:
+        - bearerAuth: []
+  /roles/{role_id}:
+    get:
+      tags:
+        - role
+      summary: Role info
+      description: View information about role
+      operationId: findRole
+      parameters:
+        - name: role_id
+          in: path
+          description: Role ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetRole'          
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Role not found
+      security:
+        - bearerAuth: []
+    patch:
+      tags:
+        - role
+      summary: Update role info
+      description: Update information about role
+      operationId: updateRole
+      parameters:
+        - name: role_id
+          in: path
+          description: Role ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Update role params
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddRole'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetRole'          
+        '400':
+          description: Invalid input
+        '404':
+          description: Role not found
+      security:
+        - bearerAuth: []
+    delete:
+      tags:
+        - role
+      summary: Delete role
+      description: Complete delete role (work only for new roles)
+      operationId: deleteRole
+      parameters:
+        - name: role_id
+          in: path
+          description: Role ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '400':
+          description: Invalid input
+        '404':
+          description: Role not found
+      security:
+        - bearerAuth: []
+  /roles/{role_id}/permissions:
+    post:
+      tags:
+        - role
+      summary: Create role permissions
+      description: Create new role permissions
+      operationId: createPermissions
+      parameters:
+        - name: role_id
+          in: path
+          description: Role ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Create role permissions
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/AddPermission'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetPermission'          
+        '400':
+          description: Invalid input
+      security:
+        - bearerAuth: []
+    get:
+      tags:
+        - role
+      summary: Get role permissions
+      description: Get role ppermissions list
+      operationId: listPermissions
+      parameters:
+        - name: role_id
+          in: path
+          description: Role ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetPermission'          
+        '400':
+          description: Invalid input
+      security:
+        - bearerAuth: []
+    delete:
+      tags:
+        - role
+      summary: Delete role permissions
+      description: Delete role permissions (by resource/action)
+      operationId: deletePermissions
+      parameters:
+        - name: role_id
+          in: path
+          description: Role ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: action_id
+          in: query
+          description: Action ID
+          schema:
+            type: integer
+            format: int64
+        - name: resource_id
+          in: query
+          description: Resource ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '400':
+          description: Invalid input
+        '404':
+          description: Role not found
+      security:
+        - bearerAuth: []
+# actions endpoints
+# ---------------
+  /actions:
+    post:
+      tags:
+        - action
+      summary: Create action
+      description: Create new action
+      operationId: createAction
+      requestBody:
+        description: Create a new user's action
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddAction'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAction'          
+        '400':
+          description: Invalid input
+      security:
+        - bearerAuth: []
+    get:
+      tags:
+        - action
+      summary: Search roles
+      description: Search roles by filters
+      operationId: listActions
+      parameters:
+        - name: id
+          in: query
+          description: Role ID (full equal)
+          required: false
+          schema:
+            type: integer
+        - name: name
+          in: query
+          description: Action name (partial equal)
+          required: false
+          schema:
+            type: string
+        - name: method
+          in: query
+          description: Action method (full equal)
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetAction'          
+        '400':
+          description: Invalid request
+      security:
+        - bearerAuth: []
+  /actions/{action_id}:
+    get:
+      tags:
+        - action
+      summary: Action info
+      description: View information about action
+      operationId: findAction
+      parameters:
+        - name: action_id
+          in: path
+          description: Action ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAction'          
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Role not found
+      security:
+        - bearerAuth: []
+    patch:
+      tags:
+        - action
+      summary: Update action info
+      description: Update information about action
+      operationId: updateAction
+      parameters:
+        - name: action_id
+          in: path
+          description: Action ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Update action params
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddAction'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAction'          
+        '400':
+          description: Invalid input
+        '404':
+          description: Action not found
+      security:
+        - bearerAuth: []
+    delete:
+      tags:
+        - action
+      summary: Delete action
+      description: Complete delete action (work only for new actions)
+      operationId: deleteAction
+      parameters:
+        - name: action_id
+          in: path
+          description: Action ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '400':
+          description: Invalid input
+        '404':
+          description: Action not found
+      security:
+        - bearerAuth: []
+# resources endpoints
+# ---------------
+  /resources:
+    post:
+      tags:
+        - resource
+      summary: Create resource
+      description: Create new resource
+      operationId: createResource
+      requestBody:
+        description: Create a new user's resource
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddResource'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetResource'          
+        '400':
+          description: Invalid input
+      security:
+        - bearerAuth: []
+    get:
+      tags:
+        - resource
+      summary: Search resources
+      description: Search resources by filters
+      operationId: listResources
+      parameters:
+        - name: id
+          in: query
+          description: Role ID (full equal)
+          required: false
+          schema:
+            type: integer
+        - name: uri_mask
+          in: query
+          description: Resource URI mask (partial equal)
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetResource'          
+        '400':
+          description: Invalid request
+      security:
+        - bearerAuth: []
+  /resources/{resource_id}:
+    get:
+      tags:
+        - resource
+      summary: Resource info
+      description: View information about resource
+      operationId: findResource
+      parameters:
+        - name: resource_id
+          in: path
+          description: Resource ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetResource'          
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Resource not found
+      security:
+        - bearerAuth: []
+    patch:
+      tags:
+        - resource
+      summary: Update resource info
+      description: Update information about resource
+      operationId: updateResource
+      parameters:
+        - name: resource_id
+          in: path
+          description: Resource ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Update resource params
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddResource'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetResource'          
+        '400':
+          description: Invalid input
+        '404':
+          description: Action not found
+      security:
+        - bearerAuth: []
+    delete:
+      tags:
+        - resource
+      summary: Delete resource
+      description: Complete delete resource (work only for new resources)
+      operationId: deleteResource
+      parameters:
+        - name: resource_id
+          in: path
+          description: Resource ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '400':
+          description: Invalid input
+        '404':
+          description: Resource not found
+      security:
+        - bearerAuth: []
+# journal endpoints
+# -----------------
+  /journal:
+    post:
+      tags:
+        - journal
+      summary: Create journal record
+      description: Create new journal record
+      operationId: createJournalRecord
+      requestBody:
+        description: Create journal record about user action
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddJournalRecord'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetJournalRecord'          
+        '400':
+          description: Invalid input
+      security:
+        - bearerAuth: []
+    get:
+      tags:
+        - journal
+      summary: Search journal records
+      description: Search journal records by filters
+      operationId: listJournalRecords
+      parameters:
+        - name: user_id
+          in: query
+          description: User ID (full equal)
+          required: false
+          schema:
+            type: integer
+        - name: resource_id
+          in: query
+          description: Resource ID (full equal)
+          required: false
+          schema:
+            type: integer
+        - name: action_id
+          in: query
+          description: Action ID (full equal)
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetJournalRecord'          
+        '400':
+          description: Invalid request
+      security:
+        - bearerAuth: []
+  /journal/{record_id}:
+    get:
+      tags:
+        - journal
+      summary: Journal record info
+      description: View information about journal record
+      operationId: findJournalrecord
+      parameters:
+        - name: record_id
+          in: path
+          description: Record ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetJournalRecord'          
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Record not found
+      security:
+        - bearerAuth: []
+components:
+  schemas:
+  
+    GetUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        created_at:
+          type: string
+          example: "2022-12-12T13:36:18.0354Z"
+        first_name:
+          type: string
+          example: "John"
+        last_name:
+          type: string
+          example: "James"
+        email:
+          type: string
+          example: "john@email.com"
+        phone:
+          type: string
+          example: "+3806800010101"
+        is_active:
+          type: boolean
+          example: false
+        is_2fa:
+          type: boolean
+          example: false
+        last_login_at:
+          type: string
+          example: "2022-12-12T13:36:18.0354Z"
+        role_id:
+          "$ref": "#/components/schemas/GetRole"
+    AddUser:
+      type: object
+      properties:
+        first_name:
+          type: string
+          example: "John"
+        last_name:
+          type: string
+          example: "James"
+        email:
+          type: string
+          example: "john@email.com"
+        password:
+          type: string
+          example: "qwerty123"
+        phone:
+          type: string
+          example: "+3806800010101"
+        is_active:
+          type: boolean
+          example: false
+        is_2fa:
+          type: boolean
+          example: false
+        role_id:
+          type: integer
+          format: int64
+          example: 1
+      required:
+        - first_name
+        - last_name
+        - email
+        - password
+        - role_id
+
+    AddRole:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Merchant manager"
+        slug:
+          type: string
+          example: "manager"
+        is_permitted:
+          type: boolean
+          example: true
+      required:
+        - name
+        - slug
+    GetRole:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        created_at:
+          type: string
+          example: "2022-12-12T13:36:18.0354Z"
+        name:
+          type: string
+          example: "Merchant manager"
+        slug:
+          type: string
+          example: "manager"
+        is_permitted:
+          type: boolean
+          example: true
+
+    AddResource:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Renew user"
+        uri_mask:
+          type: string
+          example: "/users/\\d+/renew"
+      required:
+        - name
+        - uri_mask
+    GetResource:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        created_at:
+          type: string
+          example: "2022-12-12T13:36:18.0354Z"
+        name:
+          type: string
+          example: "Renew user"
+        uri_mask:
+          type: string
+          example: "/users/\\d+/renew"
+
+    AddAction:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Merchant manager"
+        method:
+          type: string
+          example: "POST"
+      required:
+        - name
+        - method
+    GetAction:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        created_at:
+          type: string
+          example: "2022-12-12T13:36:18.0354Z"
+        name:
+          type: string
+          example: "Merchant manager"
+        method:
+          type: string
+          example: "POST"
+
+    AddPermission:
+      type: object
+      properties:
+        action_id:
+          type: integer
+          format: int64
+          example: 10
+        resource_id:
+          type: integer
+          format: int64
+          example: 10
+    GetPermission:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        created_at:
+          type: string
+          example: "2022-12-12T13:36:18.0354Z"
+        role_id:
+          type: integer
+          format: int64
+          example: 10
+        action_id:
+          type: integer
+          format: int64
+          example: 10
+        resource_id:
+          type: integer
+          format: int64
+          example: 10
+
+    AddJournalRecord:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          format: int64
+          example: 10
+        action_id:
+          type: integer
+          format: int64
+          example: 10
+        resource_id:
+          type: integer
+          format: int64
+          example: 10
+        request_data:
+          type: string
+          example: {"user_id": 1, "email": "somenew@email.com"}
+        response_data:
+          type: string
+          example: {"user_id": 1, "email": "somenew@email.com"}
+    GetJournalRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        created_at:
+          type: string
+          example: "2022-12-12T13:36:18.0354Z"
+        user:
+          "$ref": "#/components/schemas/GetUser"
+        action:
+          "$ref": "#/components/schemas/GetAction"
+        resource:
+          "$ref": "#/components/schemas/GetResource"
+        request_data:
+          type: string
+          example: {"user_id": 1, "email": "somenew@email.com"}
+        response_data:
+          type: string
+          example: {"user_id": 1, "email": "somenew@email.com"}
+    UserAuthData:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          format: int64
+          example: 10
+        email:
+          type: string
+          example: someemail@email.com
+        phone:
+          type: string
+          example: +380680001010
+        full_name:
+          type: string
+          example: John Doe
+        token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+          nullable: true
+        permissions:
+          type: array
+          items:
+            "$ref": "#/components/schemas/GetPermission"
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          example: "someemail@email.com"
+        password:
+          type: string
+          example: "qwerty123"
+    TwoFaRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          example: "someemail@email.com"
+        password:
+          type: string
+          example: "qwerty123"
+        otp_code:
+          type: string
+          example: "123456"
+    TwoFaResponse:
+      type: object
+      properties:
+        userdata:
+          "$ref": "#/components/schemas/UserAuthData"
+    Profile:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        phone:
+          type: string
+          example: someemail@email.com
+        first_name:
+          type: string
+          example: John
+        last_name:
+          type: string
+          example: Doe
+        is_2fa:
+          type: boolean
+          example: true
+    RecoveryRequest:
+      type: object
+      properties:
+        otp_code:
+          type: string
+          example: "123456"
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

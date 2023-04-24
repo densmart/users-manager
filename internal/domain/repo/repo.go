@@ -36,11 +36,20 @@ type Resources interface {
 	Delete(id uint64) error
 }
 
+type Users interface {
+	Create(data dto.CreateUserDTO) (entities.User, error)
+	Update(data dto.UpdateUserDTO) (entities.User, error)
+	Retrieve(id uint64) (entities.User, error)
+	Search(data dto.SearchUserDTO) ([]entities.User, error)
+	Delete(id uint64) error
+}
+
 type Repo struct {
 	Migrator
 	Roles
 	Actions
 	Resources
+	Users
 }
 
 func NewRepo(db *db.WrapperDB) *Repo {
@@ -49,5 +58,6 @@ func NewRepo(db *db.WrapperDB) *Repo {
 		Roles:     postgres.NewRolesPostgres(db),
 		Actions:   postgres.NewActionsPostgres(db),
 		Resources: postgres.NewResourcesPostgres(db),
+		Users:     postgres.NewUsersPostgres(db),
 	}
 }

@@ -1,9 +1,9 @@
 package postgres
 
 import (
+	"github.com/densmart/users-manager/internal/logger"
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
-	"github.com/sirupsen/logrus"
 	"time"
 )
 
@@ -51,7 +51,7 @@ func slicing(ds *goqu.SelectDataset, offset *uint, limit *uint) *goqu.SelectData
 
 func toSQL(ds exp.SQLExpression) (string, error) {
 	sql, _, err := ds.ToSQL()
-	logrus.Traceln(sql)
+	logger.Debugf(sql)
 	if err != nil {
 		return "", err
 	}

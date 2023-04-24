@@ -3,7 +3,7 @@ package usecases
 import (
 	"github.com/densmart/users-manager/internal/adapters/dto"
 	"github.com/densmart/users-manager/internal/domain/services"
-	"github.com/densmart/users-manager/pkg"
+	"github.com/densmart/users-manager/internal/domain/utils"
 	"time"
 )
 
@@ -53,7 +53,7 @@ func RetrieveAction(s services.Service, id uint64) (*dto.ActionDTO, error) {
 }
 
 func SearchActions(s services.Service, data dto.SearchActionDTO) (*dto.ActionsDTO, error) {
-	paginator := pkg.NewPaginator(data.BaseSearchRequestDto)
+	paginator := utils.NewPaginator(data.BaseSearchRequestDto)
 	offset := paginator.GetOffset()
 	limit := paginator.GetLimit()
 	data.Offset = &offset

@@ -1,0 +1,42 @@
+{{ define "header" }}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office" style="font-family:arial, 'helvetica neue', helvetica, sans-serif">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <meta name="x-apple-disable-message-reformatting">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="telephone=no" name="format-detection">
+    <title>{{ template "title" . }}</title>
+    <!--[if (mso 16)]>
+    <style type="text/css">
+        a {text-decoration: none;}
+    </style>
+    <![endif]--><!--[if gte mso 9]><style>sup { font-size: 100% !important; }</style><![endif]--><!--[if gte mso 9]>
+    <xml>
+        <o:OfficeDocumentSettings>
+            <o:AllowPNG></o:AllowPNG>
+            <o:PixelsPerInch>96</o:PixelsPerInch>
+        </o:OfficeDocumentSettings>
+    </xml>
+    <![endif]-->
+    <style type="text/css">
+        #outlook a {
+            padding:0;
+        }
+        a[x-apple-data-detectors] {
+            color:inherit!important;
+            text-decoration:none!important;
+            font-size:inherit!important;
+            font-family:inherit!important;
+            font-weight:inherit!important;
+            line-height:inherit!important;
+        }
+        a {
+            text-decoration-color: #FFCC00 !important;
+        }
+        @media only screen and (max-width:600px) { .es-content-body > tbody > tr > td { padding: 15px !important; }  p, a { line-height:150%!important } h1 { line-height:120% } h1 { font-size:12px!important; text-align:left } .es-content-body p, .es-content-body a { font-size:12px!important } .es-content table, .es-content { width:100%!important; max-width:600px!important } }
+    </style>
+</head>
+<body style="width:100%;font-family:arial, 'helvetica neue', helvetica, sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;padding:0;Margin:0">
+{{ end }}

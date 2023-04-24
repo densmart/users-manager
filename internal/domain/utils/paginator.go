@@ -1,4 +1,4 @@
-package pkg
+package utils
 
 import (
 	"github.com/densmart/users-manager/internal/adapters/dto"
@@ -25,7 +25,7 @@ func NewPaginator(data dto.BaseSearchRequestDto) *Paginator {
 	if data.PerPage != nil {
 		perPage = *data.PerPage
 	}
-	if perPage > 500 {
+	if perPage > maxPerPage {
 		perPage = maxPerPage
 	}
 	var page uint
@@ -78,7 +78,7 @@ func (p *Paginator) GetLimit() uint {
 
 func (p *Paginator) GetTotalPages() uint {
 	pages, mod := Divmod(int(p.Totals), int(p.PerPage))
-	if mod > 0 {
+	if mod >= 0 {
 		pages++
 	}
 	return uint(pages)

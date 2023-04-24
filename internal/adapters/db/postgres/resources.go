@@ -72,7 +72,7 @@ func (r *ResourcesPostgres) Retrieve(id uint64) (entities.Resource, error) {
 		return resource, err
 	}
 	row := conn.QueryRow(r.db.Ctx, query)
-	if err = row.Scan(&resource.Id, &resource.CreatedAt, &resource.Name, &resource.UriMask); err != nil {
+	if err = row.Scan(&resource.Id, &resource.CreatedAt, &resource.UpdatedAt, &resource.Name, &resource.UriMask); err != nil {
 		return resource, err
 	}
 	return resource, nil
@@ -96,7 +96,7 @@ func (r *ResourcesPostgres) Search(data dto.SearchResourceDTO) ([]entities.Resou
 	}
 	for rows.Next() {
 		var resource entities.Resource
-		if err = rows.Scan(&resource.Id, &resource.CreatedAt, &resource.Name, &resource.UriMask); err != nil {
+		if err = rows.Scan(&resource.Id, &resource.CreatedAt, &resource.UpdatedAt, &resource.Name, &resource.UriMask); err != nil {
 			return resources, err
 		}
 		resources = append(resources, resource)

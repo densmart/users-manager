@@ -30,6 +30,6 @@ type RoleDTO struct {
 }
 
 type RolesDTO struct {
-	Pagination string    `json:"pagination"`
+	Pagination string    `json:"-"`
 	Items      []RoleDTO `json:"items"`
 }

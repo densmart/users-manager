@@ -3,7 +3,7 @@ package usecases
 import (
 	"github.com/densmart/users-manager/internal/adapters/dto"
 	"github.com/densmart/users-manager/internal/domain/services"
-	"github.com/densmart/users-manager/pkg"
+	"github.com/densmart/users-manager/internal/domain/utils"
 	"time"
 )
 
@@ -53,7 +53,7 @@ func RetrieveResource(s services.Service, id uint64) (*dto.ResourceDTO, error) {
 }
 
 func SearchResources(s services.Service, data dto.SearchResourceDTO) (*dto.ResourcesDTO, error) {
-	paginator := pkg.NewPaginator(data.BaseSearchRequestDto)
+	paginator := utils.NewPaginator(data.BaseSearchRequestDto)
 	offset := paginator.GetOffset()
 	limit := paginator.GetLimit()
 	data.Offset = &offset

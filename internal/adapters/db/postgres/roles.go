@@ -83,7 +83,7 @@ func (r *RolesPostgres) Retrieve(id uint64) (entities.Role, error) {
 		return role, err
 	}
 	row := conn.QueryRow(r.db.Ctx, query)
-	if err = row.Scan(&role.Id, &role.CreatedAt, &role.Name, &role.Slug, &role.IsPermitted); err != nil {
+	if err = row.Scan(&role.Id, &role.CreatedAt, &role.UpdatedAt, &role.Name, &role.Slug, &role.IsPermitted); err != nil {
 		return role, err
 	}
 	return role, nil
@@ -107,7 +107,7 @@ func (r *RolesPostgres) Search(data dto.SearchRoleDTO) ([]entities.Role, error) 
 	}
 	for rows.Next() {
 		var role entities.Role
-		if err = rows.Scan(&role.Id, &role.CreatedAt, &role.Name, &role.Slug, &role.IsPermitted); err != nil {
+		if err = rows.Scan(&role.Id, &role.CreatedAt, &role.UpdatedAt, &role.Name, &role.Slug, &role.IsPermitted); err != nil {
 			return roles, err
 		}
 		roles = append(roles, role)

@@ -1,0 +1,11 @@
+{{ define "title" }}Welcome!{{ end }}
+
+{{ template "header" . }}
+<div style="text-align: center">
+    <h1>User Manager welcomes you!</h1>
+    <p>Dear, {{ index . "username" }}</p>
+    <p>Your login: {{ index .  "email" }} (your email)</p>
+    <p>Your password: {{ index . "password" }}</p>
+    <p>QR code for 2FA verification is in email attach</p>
+</div>
+{{ template "footer" . }}

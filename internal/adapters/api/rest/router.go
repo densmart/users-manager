@@ -28,8 +28,8 @@ func (h *RestRouter) InitRoutes() *gin.Engine {
 			roles.POST("/", h.createRole)
 			roles.GET("/:id", h.retrieveRole)
 			roles.GET("/", h.searchRoles)
-			roles.PATCH("/", h.updateRole)
-			roles.DELETE("/", h.deleteRole)
+			roles.PATCH("/:id", h.updateRole)
+			roles.DELETE("/:id", h.deleteRole)
 		}
 
 		actions := v1.Group("/actions", h.JWTAuthMiddleware)
@@ -37,8 +37,8 @@ func (h *RestRouter) InitRoutes() *gin.Engine {
 			actions.POST("/", h.createAction)
 			actions.GET("/:id", h.retrieveAction)
 			actions.GET("/", h.searchActions)
-			actions.PATCH("/", h.updateAction)
-			actions.DELETE("/", h.deleteAction)
+			actions.PATCH("/:id", h.updateAction)
+			actions.DELETE("/:id", h.deleteAction)
 		}
 
 		resources := v1.Group("/resources", h.JWTAuthMiddleware)
@@ -46,8 +46,17 @@ func (h *RestRouter) InitRoutes() *gin.Engine {
 			resources.POST("/", h.createResource)
 			resources.GET("/:id", h.retrieveResource)
 			resources.GET("/", h.searchResources)
-			resources.PATCH("/", h.updateResource)
-			resources.DELETE("/", h.deleteResource)
+			resources.PATCH("/:id", h.updateResource)
+			resources.DELETE("/:id", h.deleteResource)
+		}
+
+		users := v1.Group("/users", h.JWTAuthMiddleware)
+		{
+			users.POST("/", h.createUser)
+			users.GET("/:id", h.retrieveUser)
+			users.GET("/", h.searchUsers)
+			users.PATCH("/:id", h.updateUser)
+			users.DELETE("/:id", h.deleteUser)
 		}
 	}
 

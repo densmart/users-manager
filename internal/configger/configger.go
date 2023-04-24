@@ -1,8 +1,8 @@
-package pkg
+package configger
 
 import (
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"log"
 	"os"
 	"strings"
 )
@@ -14,10 +14,10 @@ func InitConfig() {
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		logrus.Fatalf("Couldn't load configuration, cannot start. Terminating. Error: " + err.Error())
+		log.Fatalf("Couldn't load configuration, cannot start. Terminating. Error: " + err.Error())
 	}
-	logrus.Infoln("Config loaded successfully...")
-	logrus.Infoln("Getting environment variables...")
+	log.Println("Config loaded successfully...")
+	log.Println("Getting environment variables...")
 	for _, k := range viper.AllKeys() {
 		value := viper.GetString(k)
 		if strings.HasPrefix(value, "${") && strings.HasSuffix(value, "}") {
@@ -28,7 +28,7 @@ func InitConfig() {
 
 func getEnvOrPanic(env string) string {
 	if !strings.Contains(env, ":") {
-		logrus.Fatalf("Log format variable %s is incorrect. ':' missing", env)
+		log.Fatalf("Log format variable %s is incorrect. ':' missing", env)
 	}
 
 	varSplit := strings.Split(env, ":")

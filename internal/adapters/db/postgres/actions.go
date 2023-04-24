@@ -72,7 +72,7 @@ func (r *ActionsPostgres) Retrieve(id uint64) (entities.Action, error) {
 		return action, err
 	}
 	row := conn.QueryRow(r.db.Ctx, query)
-	if err = row.Scan(&action.Id, &action.CreatedAt, &action.Name, &action.Method); err != nil {
+	if err = row.Scan(&action.Id, &action.CreatedAt, &action.UpdatedAt, &action.Name, &action.Method); err != nil {
 		return action, err
 	}
 	return action, nil
@@ -96,7 +96,7 @@ func (r *ActionsPostgres) Search(data dto.SearchActionDTO) ([]entities.Action, e
 	}
 	for rows.Next() {
 		var action entities.Action
-		if err = rows.Scan(&action.Id, &action.CreatedAt, &action.Name, &action.Method); err != nil {
+		if err = rows.Scan(&action.Id, &action.CreatedAt, &action.UpdatedAt, &action.Name, &action.Method); err != nil {
 			return actions, err
 		}
 		actions = append(actions, action)

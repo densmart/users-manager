@@ -1,0 +1,10 @@
+{{ define "title" }}Account recovery{{ end }}
+
+{{ template "header" . }}
+<div style="text-align: center">
+    <p>Dear, {{ index . "username" }}</p>
+    <p>Your data has been recovered. This is your new credentials:</p>
+    <p>Your login: {{ index .  "email" }} (your email)</p>
+    <p>Your password: {{ index . "password" }}</p>
+</div>
+{{ template "footer" . }}

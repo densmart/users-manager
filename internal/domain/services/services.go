@@ -35,11 +35,20 @@ type Resources interface {
 	Delete(id uint64) error
 }
 
+type Users interface {
+	Create(data dto.CreateUserDTO) (entities.User, error)
+	Update(data dto.UpdateUserDTO) (entities.User, error)
+	Retrieve(id uint64) (entities.User, error)
+	Search(data dto.SearchUserDTO) ([]entities.User, error)
+	Delete(id uint64) error
+}
+
 type Service struct {
 	Migrator
 	Roles
 	Actions
 	Resources
+	Users
 }
 
 func NewService(repo *repo.Repo) *Service {
@@ -48,5 +57,6 @@ func NewService(repo *repo.Repo) *Service {
 		Roles:     NewRolesService(repo.Roles),
 		Actions:   NewActionsService(repo.Actions),
 		Resources: NewResourcesService(repo.Resources),
+		Users:     NewUsersService(repo.Users),
 	}
 }

@@ -26,6 +26,6 @@ type ActionDTO struct {
 }
 
 type ActionsDTO struct {
-	Pagination string      `json:"pagination"`
+	Pagination string      `json:"-"`
 	Items      []ActionDTO `json:"items"`
 }

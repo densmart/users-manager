@@ -1,10 +1,11 @@
+# app overall settings
+app:
+  name: ${APP_NAME:SB_USERS}
+  template_dir: ${TEMPLATE_DIR:internal/templates/emails/}
+
 # logger settings
 logger:
-  level: ${LOG_LEVEL:trace}
-  max_size: ${LOG_MAX_SIZE:100} # mb
-  backups_count: ${LOG_BACKUPS_COUNT:10}
-  max_age: ${LOG_MAX_AGE:1} # days
-  file: ${LOG_FILE:logs/main.log}
+  level: ${LOG_LEVEL:debug}
 
 # Database connection settings
 db:
@@ -20,3 +21,10 @@ rest:
   readTimeout: ${REST_READ_TIMEOUT:15} # seconds
   writeTimeout: ${REST_WRITE_TIMEOUT:15} # seconds
   maxHeaderBytes: ${REST_MAX_HEADER_BYTES:1048576} # 1mb
+
+mail:
+  host: ${MAIL_SMTP_HOST:smtp.gmail.com}
+  port: ${MAIL_SMTP_PORT:587}
+  from: ${MAIL_SMTP_FROM:some@email.com}
+  user: ${MAIL_SMTP_USER:someuser}
+  password: ${MAIL_SMTP_PASSWORD:somepwd}

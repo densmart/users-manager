@@ -1,14 +1,14 @@
 openapi: 3.0.3
 info:
-  title: PSPCore Users
+  title: Users Manager
   description: |-
-    PSPCore users management
-    Using for authorization in psp core admin page (backoffice), 
+    Users management
+    Using for authorization in admin page (backoffice), 
     access control (RBAC), users action journaling
   version: 0.0.1
 
 servers:
-  - url: http://localhost:7979
+  - url: http://localhost:8080
   - url: https://some.outer.api.com:8081/
 
 tags:
@@ -28,8 +28,8 @@ tags:
     description: Add/View actions with user activity journal
 
 paths:
-# auth methods
-# ------------
+  # auth methods
+  # ------------
   /auth/login:
     post:
       tags:
@@ -84,13 +84,13 @@ paths:
           description: Access denied (wrong code)
         '404':
           description: User not found
-# profile endpoints
-# -----------------
+  # profile endpoints
+  # -----------------
   /profile/{user_id}:
     patch:
       tags:
         - profile
-      summary: Edit user info 
+      summary: Edit user info
       description: Self edit info about user (phone, 2FA, etc...)
       operationId: profileEdit
       parameters:
@@ -124,7 +124,7 @@ paths:
     post:
       tags:
         - profile
-      summary: User password recovery 
+      summary: User password recovery
       description: Generate new temp password and resend activation email
       operationId: profileRecovery
       parameters:
@@ -154,8 +154,8 @@ paths:
           description: User not found
       security:
         - bearerAuth: []
-# users endpoints
-# ---------------
+  # users endpoints
+  # ---------------
   /users:
     post:
       tags:
@@ -176,7 +176,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetUser'          
+                $ref: '#/components/schemas/GetUser'
         '400':
           description: Invalid input
       security:
@@ -238,7 +238,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/GetUser'          
+                  $ref: '#/components/schemas/GetUser'
         '400':
           description: Invalid status value
       security:
@@ -264,7 +264,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetUser'          
+                $ref: '#/components/schemas/GetUser'
         '400':
           description: Invalid ID supplied
         '404':
@@ -297,7 +297,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetUser'          
+                $ref: '#/components/schemas/GetUser'
         '400':
           description: Invalid input
         '404':
@@ -354,8 +354,8 @@ paths:
       security:
         - bearerAuth: []
 
-# roles endpoints
-# ---------------
+  # roles endpoints
+  # ---------------
   /roles:
     post:
       tags:
@@ -376,7 +376,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetRole'          
+                $ref: '#/components/schemas/GetRole'
         '400':
           description: Invalid input
       security:
@@ -414,7 +414,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/GetRole'          
+                  $ref: '#/components/schemas/GetRole'
         '400':
           description: Invalid request
       security:
@@ -440,7 +440,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetRole'          
+                $ref: '#/components/schemas/GetRole'
         '400':
           description: Invalid ID supplied
         '404':
@@ -474,7 +474,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetRole'          
+                $ref: '#/components/schemas/GetRole'
         '400':
           description: Invalid input
         '404':
@@ -534,7 +534,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/GetPermission'          
+                  $ref: '#/components/schemas/GetPermission'
         '400':
           description: Invalid input
       security:
@@ -561,7 +561,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/GetPermission'          
+                  $ref: '#/components/schemas/GetPermission'
         '400':
           description: Invalid input
       security:
@@ -599,8 +599,8 @@ paths:
           description: Role not found
       security:
         - bearerAuth: []
-# actions endpoints
-# ---------------
+  # actions endpoints
+  # ---------------
   /actions:
     post:
       tags:
@@ -621,7 +621,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetAction'          
+                $ref: '#/components/schemas/GetAction'
         '400':
           description: Invalid input
       security:
@@ -659,7 +659,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/GetAction'          
+                  $ref: '#/components/schemas/GetAction'
         '400':
           description: Invalid request
       security:
@@ -685,7 +685,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetAction'          
+                $ref: '#/components/schemas/GetAction'
         '400':
           description: Invalid ID supplied
         '404':
@@ -719,7 +719,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetAction'          
+                $ref: '#/components/schemas/GetAction'
         '400':
           description: Invalid input
         '404':
@@ -747,8 +747,8 @@ paths:
           description: Action not found
       security:
         - bearerAuth: []
-# resources endpoints
-# ---------------
+  # resources endpoints
+  # ---------------
   /resources:
     post:
       tags:
@@ -769,7 +769,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetResource'          
+                $ref: '#/components/schemas/GetResource'
         '400':
           description: Invalid input
       security:
@@ -801,7 +801,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/GetResource'          
+                  $ref: '#/components/schemas/GetResource'
         '400':
           description: Invalid request
       security:
@@ -827,7 +827,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetResource'          
+                $ref: '#/components/schemas/GetResource'
         '400':
           description: Invalid ID supplied
         '404':
@@ -861,7 +861,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetResource'          
+                $ref: '#/components/schemas/GetResource'
         '400':
           description: Invalid input
         '404':
@@ -889,8 +889,8 @@ paths:
           description: Resource not found
       security:
         - bearerAuth: []
-# journal endpoints
-# -----------------
+  # journal endpoints
+  # -----------------
   /journal:
     post:
       tags:
@@ -911,7 +911,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetJournalRecord'          
+                $ref: '#/components/schemas/GetJournalRecord'
         '400':
           description: Invalid input
       security:
@@ -949,7 +949,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/GetJournalRecord'          
+                  $ref: '#/components/schemas/GetJournalRecord'
         '400':
           description: Invalid request
       security:
@@ -975,7 +975,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetJournalRecord'          
+                $ref: '#/components/schemas/GetJournalRecord'
         '400':
           description: Invalid ID supplied
         '404':
@@ -984,7 +984,7 @@ paths:
         - bearerAuth: []
 components:
   schemas:
-  
+
     GetUser:
       type: object
       properties:

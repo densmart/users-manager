@@ -23,6 +23,7 @@ func (h *RestRouter) createResource(c *gin.Context) {
 	if err != nil {
 		if errors.As(err, &apiErr) {
 			ErrorResponse(c, apiErr.HttpCode, err.Error())
+			return
 		}
 		ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -43,6 +44,7 @@ func (h *RestRouter) retrieveResource(c *gin.Context) {
 	if err != nil {
 		if errors.As(err, &apiErr) {
 			ErrorResponse(c, apiErr.HttpCode, err.Error())
+			return
 		}
 		ErrorResponse(c, http.StatusInternalServerError, err.Error())
 	}
@@ -65,13 +67,13 @@ func (h *RestRouter) searchResources(c *gin.Context) {
 	if err != nil {
 		if errors.As(err, &apiErr) {
 			ErrorResponse(c, apiErr.HttpCode, err.Error())
+			return
 		}
 		ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.Header("Link", resources.Pagination)
-	SuccessResponse(c, resources)
+	SuccessResponse(c, resources.Items)
 }
 
 func (h *RestRouter) updateResource(c *gin.Context) {
@@ -95,6 +97,7 @@ func (h *RestRouter) updateResource(c *gin.Context) {
 	if err != nil {
 		if errors.As(err, &apiErr) {
 			ErrorResponse(c, apiErr.HttpCode, err.Error())
+			return
 		}
 		ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -114,6 +117,7 @@ func (h *RestRouter) deleteResource(c *gin.Context) {
 	if err = usecases.DeleteResource(*h.service, uint64(resourceID)); err != nil {
 		if errors.As(err, &apiErr) {
 			ErrorResponse(c, apiErr.HttpCode, err.Error())
+			return
 		}
 		ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return

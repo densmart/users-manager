@@ -32,15 +32,6 @@ func (h *RestRouter) InitRoutes() *gin.Engine {
 			roles.DELETE("/:id", h.deleteRole)
 		}
 
-		actions := v1.Group("/actions", h.JWTAuthMiddleware)
-		{
-			actions.POST("/", h.createAction)
-			actions.GET("/:id", h.retrieveAction)
-			actions.GET("/", h.searchActions)
-			actions.PATCH("/:id", h.updateAction)
-			actions.DELETE("/:id", h.deleteAction)
-		}
-
 		resources := v1.Group("/resources", h.JWTAuthMiddleware)
 		{
 			resources.POST("/", h.createResource)

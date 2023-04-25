@@ -4,6 +4,8 @@ import (
 	"crypto/rand"
 	"encoding/base32"
 	"golang.org/x/crypto/bcrypt"
+	"math"
+	"strconv"
 )
 
 func Divmod(numerator, denominator int) (quotient, remainder int) {
@@ -31,4 +33,22 @@ func Create2FASecret() (string, error) {
 		return "", err
 	}
 	return base32.StdEncoding.EncodeToString(secret), nil
+}
+
+// BinaryStringToDecimal Convert binary string like "10111" to decimal number
+func BinaryStringToDecimal(binString string) (int, error) {
+	var remainder int
+	binCode, err := strconv.Atoi(binString)
+	if err != nil {
+		return 0, err
+	}
+	index := 0
+	decimalNum := 0
+	for binCode != 0 {
+		remainder = binCode % 10
+		binCode = binCode / 10
+		decimalNum = decimalNum + remainder*int(math.Pow(2, float64(index)))
+		index++
+	}
+	return decimalNum, nil
 }

@@ -45,138 +45,73 @@ INSERT INTO "users" (created_at, updated_at, first_name, last_name, email, passw
 VALUES (now(), now(), 'Global', 'Admin', 'admin@usersmanager.io',
         '$2a$10$.gtOT8enT0tU4J4t37XYcOTV26p7/5u.QXMkKBk/851bZi2ddcOWi', NULL, NULL, TRUE, FALSE, FALSE, 1);
 
-CREATE TABLE "actions" (
-    "id" bigserial,
-    "created_at" timestamptz,
-    "updated_at" timestamptz,
-    "name" varchar(128),
-    "method" varchar(16),
-    PRIMARY KEY ("id")
-);
-CREATE INDEX actions_name ON "actions" ("name");
-CREATE INDEX actions_method ON "actions" ("method");
-
-INSERT INTO "actions" (created_at, updated_at, name, method)
-VALUES (now(), now(), 'add', 'POST');
-INSERT INTO "actions" (created_at, updated_at, name, method)
-VALUES (now(), now(), 'edit', 'PATCH');
-INSERT INTO "actions" (created_at, updated_at, name, method)
-VALUES (now(), now(), 'list', 'GET');
-INSERT INTO "actions" (created_at, updated_at, name, method)
-VALUES (now(), now(), 'view', 'GET');
-INSERT INTO "actions" (created_at, updated_at, name, method)
-VALUES (now(), now(), 'delete', 'DELETE');
-
 CREATE TABLE "resources" (
      "id" bigserial,
      "created_at" timestamptz,
      "updated_at" timestamptz,
      "name" varchar(128),
      "uri_mask" varchar(512),
+     "method_mask" int, -- byte mask of HTTP METHODS
+     "is_active" boolean DEFAULT false,
+     "res_group" varchar(128), -- group resource by specific name
      PRIMARY KEY ("id")
 );
 CREATE INDEX resources_name ON "resources" ("name");
+CREATE INDEX resources_uri_mask ON "resources" ("uri_mask");
+CREATE INDEX resources_group ON "resources" ("res_group");
 
-INSERT INTO "resources" (created_at, updated_at, name, uri_mask)
-VALUES (now(), now(), 'Users CRUD', '/users');
-INSERT INTO "resources" (created_at, updated_at, name, uri_mask)
-VALUES (now(), now(), 'Roles CRUD', '/roles');
-INSERT INTO "resources" (created_at, updated_at, name, uri_mask)
-VALUES (now(), now(), 'Actions CRUD', '/actions');
-INSERT INTO "resources" (created_at, updated_at, name, uri_mask)
-VALUES (now(), now(), 'Resources CRUD', '/resources');
-INSERT INTO "resources" (created_at, updated_at, name, uri_mask)
-VALUES (now(), now(), 'Permissions CRUD', '/permissions');
+INSERT INTO "resources" (created_at, updated_at, name, uri_mask, method_mask, is_active, res_group)
+VALUES (now(), now(), 'Users', '/users', 12, true, 'Users');
+INSERT INTO "resources" (created_at, updated_at, name, uri_mask, method_mask, is_active, res_group)
+VALUES (now(), now(), 'User', '/users/\d+', 11, true, 'Users');
+INSERT INTO "resources" (created_at, updated_at, name, uri_mask, method_mask, is_active, res_group)
+VALUES (now(), now(), 'Users recovery', '/users/\d+/recovery', 4, false, 'Users');
+INSERT INTO "resources" (created_at, updated_at, name, uri_mask, method_mask, is_active, res_group)
+VALUES (now(), now(), 'Roles', '/roles', 12, true, 'Roles');
+INSERT INTO "resources" (created_at, updated_at, name, uri_mask, method_mask, is_active, res_group)
+VALUES (now(), now(), 'Role', '/roles/\d+', 11, true, 'Roles');
+INSERT INTO "resources" (created_at, updated_at, name, uri_mask, method_mask, is_active, res_group)
+VALUES (now(), now(), 'Actions', '/actions', 12, true, 'Actions');
+INSERT INTO "resources" (created_at, updated_at, name, uri_mask, method_mask, is_active, res_group)
+VALUES (now(), now(), 'Action', '/actions/\d+', 11, true, 'Actions');
+INSERT INTO "resources" (created_at, updated_at, name, uri_mask, method_mask, is_active, res_group)
+VALUES (now(), now(), 'Resources', '/resources', 12, true, 'Resources');
+INSERT INTO "resources" (created_at, updated_at, name, uri_mask, method_mask, is_active, res_group)
+VALUES (now(), now(), 'Resource', '/resources/\d+', 11, true, 'Resources');
+INSERT INTO "resources" (created_at, updated_at, name, uri_mask, method_mask, is_active, res_group)
+VALUES (now(), now(), 'Permissions', '/permissions', 12, true, 'Permissions');
+INSERT INTO "resources" (created_at, updated_at, name, uri_mask, method_mask, is_active, res_group)
+VALUES (now(), now(), 'Permission', '/permissions/\d+', 11, true, 'Permissions');
 
 CREATE TABLE "permissions" (
     "id" bigserial,
     "created_at" timestamptz,
     "updated_at" timestamptz,
     "role_id" bigint,
-    "action_id" bigint,
     "resource_id" bigint,
     PRIMARY KEY ("id")
 );
-CREATE UNIQUE INDEX role_action_resource_unique ON "permissions" ("role_id", "action_id", "resource_id");
+CREATE UNIQUE INDEX role_action_resource_unique ON "permissions" ("role_id", "resource_id");
 ALTER TABLE "permissions" ADD FOREIGN KEY ("role_id") REFERENCES "roles" ("id");
-ALTER TABLE "permissions" ADD FOREIGN KEY ("action_id") REFERENCES "actions" ("id");
 ALTER TABLE "permissions" ADD FOREIGN KEY ("resource_id") REFERENCES "resources" ("id");
-
-INSERT INTO "permissions" (created_at, updated_at, role_id, action_id, resource_id)
-VALUES (now(), now(), 1, 1, 1);
-INSERT INTO "permissions" (created_at, updated_at, role_id, action_id, resource_id)
-VALUES (now(), now(), 1, 2, 1);
-INSERT INTO "permissions" (created_at, updated_at, role_id, action_id, resource_id)
-VALUES (now(), now(), 1, 3, 1);
-INSERT INTO "permissions" (created_at, updated_at, role_id, action_id, resource_id)
-VALUES (now(), now(), 1, 4, 1);
-INSERT INTO "permissions" (created_at, updated_at, role_id, action_id, resource_id)
-VALUES (now(), now(), 1, 5, 1);
-
-INSERT INTO "permissions" (created_at, updated_at, role_id, action_id, resource_id)
-VALUES (now(), now(), 1, 1, 2);
-INSERT INTO "permissions" (created_at, updated_at, role_id, action_id, resource_id)
-VALUES (now(), now(), 1, 2, 2);
-INSERT INTO "permissions" (created_at, updated_at, role_id, action_id, resource_id)
-VALUES (now(), now(), 1, 3, 2);
-INSERT INTO "permissions" (created_at, updated_at, role_id, action_id, resource_id)
-VALUES (now(), now(), 1, 4, 2);
-INSERT INTO "permissions" (created_at, updated_at, role_id, action_id, resource_id)
-VALUES (now(), now(), 1, 5, 2);
-
-INSERT INTO "permissions" (created_at, updated_at, role_id, action_id, resource_id)
-VALUES (now(), now(), 1, 1, 3);
-INSERT INTO "permissions" (created_at, updated_at, role_id, action_id, resource_id)
-VALUES (now(), now(), 1, 2, 3);
-INSERT INTO "permissions" (created_at, updated_at, role_id, action_id, resource_id)
-VALUES (now(), now(), 1, 3, 3);
-INSERT INTO "permissions" (created_at, updated_at, role_id, action_id, resource_id)
-VALUES (now(), now(), 1, 4, 3);
-INSERT INTO "permissions" (created_at, updated_at, role_id, action_id, resource_id)
-VALUES (now(), now(), 1, 5, 3);
-
-INSERT INTO "permissions" (created_at, updated_at, role_id, action_id, resource_id)
-VALUES (now(), now(), 1, 1, 4);
-INSERT INTO "permissions" (created_at, updated_at, role_id, action_id, resource_id)
-VALUES (now(), now(), 1, 2, 4);
-INSERT INTO "permissions" (created_at, updated_at, role_id, action_id, resource_id)
-VALUES (now(), now(), 1, 3, 4);
-INSERT INTO "permissions" (created_at, updated_at, role_id, action_id, resource_id)
-VALUES (now(), now(), 1, 4, 4);
-INSERT INTO "permissions" (created_at, updated_at, role_id, action_id, resource_id)
-VALUES (now(), now(), 1, 5, 4);
-
-INSERT INTO "permissions" (created_at, updated_at, role_id, action_id, resource_id)
-VALUES (now(), now(), 1, 1, 5);
-INSERT INTO "permissions" (created_at, updated_at, role_id, action_id, resource_id)
-VALUES (now(), now(), 1, 2, 5);
-INSERT INTO "permissions" (created_at, updated_at, role_id, action_id, resource_id)
-VALUES (now(), now(), 1, 3, 5);
-INSERT INTO "permissions" (created_at, updated_at, role_id, action_id, resource_id)
-VALUES (now(), now(), 1, 4, 5);
-INSERT INTO "permissions" (created_at, updated_at, role_id, action_id, resource_id)
-VALUES (now(), now(), 1, 5, 5);
 
 CREATE TABLE "journal" (
     "id" bigserial,
     "created_at" timestamptz,
     "updated_at" timestamptz,
     "user_id" bigint,
-    "action_id" bigint,
     "resource_id" bigint,
     "request_data" text,
     "response_data" text,
     PRIMARY KEY ("id")
 );
 ALTER TABLE "journal" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
-ALTER TABLE "journal" ADD FOREIGN KEY ("action_id") REFERENCES "actions" ("id");
 ALTER TABLE "journal" ADD FOREIGN KEY ("resource_id") REFERENCES "resources" ("id");
 
 ---- create above / drop below ----
 
 DROP TABLE "roles";
 DROP TABLE "users";
-DROP TABLE "actions";
 DROP TABLE "resources";
 DROP TABLE "permissions";
 DROP TABLE "journal";

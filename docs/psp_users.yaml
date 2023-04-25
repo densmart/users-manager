@@ -13,15 +13,13 @@ servers:
 
 tags:
   - name: auth
-    description: System authorizatoin methods
+    description: System authorization methods
   - name: profile
     description: User self-management endpoints
   - name: user
     description: Users CRUD operations + additional (password recovery, etc)
   - name: role
     description: Roles CRUD operations
-  - name: action
-    description: Actions CRUD operations
   - name: resource
     description: Resources CRUD operations
   - name: journal
@@ -325,13 +323,13 @@ paths:
           description: User not found
       security:
         - bearerAuth: []
-  /users/{user_id}/renew:
+  /users/{user_id}/recovery:
     post:
       tags:
         - user
-      summary: Renew user info
+      summary: Recovery user info
       description: Reset user password, 2fa token (if set) and send activation email. New password and token generates automatically
-      operationId: renewUser
+      operationId: recoveryUser
       parameters:
         - name: user_id
           in: path
@@ -342,7 +340,7 @@ paths:
             format: int64
       responses:
         '200':
-          description: Successful renew
+          description: Successful recovery
           content:
             application/json:
               schema:
@@ -570,19 +568,13 @@ paths:
       tags:
         - role
       summary: Delete role permissions
-      description: Delete role permissions (by resource/action)
+      description: Delete role permissions (by resource)
       operationId: deletePermissions
       parameters:
         - name: role_id
           in: path
           description: Role ID
           required: true
-          schema:
-            type: integer
-            format: int64
-        - name: action_id
-          in: query
-          description: Action ID
           schema:
             type: integer
             format: int64
@@ -597,154 +589,6 @@ paths:
           description: Invalid input
         '404':
           description: Role not found
-      security:
-        - bearerAuth: []
-  # actions endpoints
-  # ---------------
-  /actions:
-    post:
-      tags:
-        - action
-      summary: Create action
-      description: Create new action
-      operationId: createAction
-      requestBody:
-        description: Create a new user's action
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AddAction'
-        required: true
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetAction'
-        '400':
-          description: Invalid input
-      security:
-        - bearerAuth: []
-    get:
-      tags:
-        - action
-      summary: Search roles
-      description: Search roles by filters
-      operationId: listActions
-      parameters:
-        - name: id
-          in: query
-          description: Role ID (full equal)
-          required: false
-          schema:
-            type: integer
-        - name: name
-          in: query
-          description: Action name (partial equal)
-          required: false
-          schema:
-            type: string
-        - name: method
-          in: query
-          description: Action method (full equal)
-          required: false
-          schema:
-            type: boolean
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/GetAction'
-        '400':
-          description: Invalid request
-      security:
-        - bearerAuth: []
-  /actions/{action_id}:
-    get:
-      tags:
-        - action
-      summary: Action info
-      description: View information about action
-      operationId: findAction
-      parameters:
-        - name: action_id
-          in: path
-          description: Action ID
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetAction'
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: Role not found
-      security:
-        - bearerAuth: []
-    patch:
-      tags:
-        - action
-      summary: Update action info
-      description: Update information about action
-      operationId: updateAction
-      parameters:
-        - name: action_id
-          in: path
-          description: Action ID
-          required: true
-          schema:
-            type: integer
-            format: int64
-      requestBody:
-        description: Update action params
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AddAction'
-        required: true
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetAction'
-        '400':
-          description: Invalid input
-        '404':
-          description: Action not found
-      security:
-        - bearerAuth: []
-    delete:
-      tags:
-        - action
-      summary: Delete action
-      description: Complete delete action (work only for new actions)
-      operationId: deleteAction
-      parameters:
-        - name: action_id
-          in: path
-          description: Action ID
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '400':
-          description: Invalid input
-        '404':
-          description: Action not found
       security:
         - bearerAuth: []
   # resources endpoints
@@ -793,6 +637,12 @@ paths:
           required: false
           schema:
             type: string
+        - name: is_active
+          in: query
+          description: Resource activity flag (full equal)
+          required: false
+          schema:
+            type: string
       responses:
         '200':
           description: successful operation
@@ -801,7 +651,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/GetResource'
+                  $ref: '#/components/schemas/SearchResource'
         '400':
           description: Invalid request
       security:
@@ -865,7 +715,7 @@ paths:
         '400':
           description: Invalid input
         '404':
-          description: Action not found
+          description: Resource not found
       security:
         - bearerAuth: []
     delete:
@@ -932,12 +782,6 @@ paths:
         - name: resource_id
           in: query
           description: Resource ID (full equal)
-          required: false
-          schema:
-            type: integer
-        - name: action_id
-          in: query
-          description: Action ID (full equal)
           required: false
           schema:
             type: integer
@@ -1093,13 +937,24 @@ components:
       properties:
         name:
           type: string
-          example: "Renew user"
+          example: "Recovery user"
         uri_mask:
           type: string
-          example: "/users/\\d+/renew"
+          example: "/users/\\d+/recovery"
+        actions_mask:
+          type: string
+          example: "1100"
+        is_active:
+          type: boolean
+          example: true
+        res_group:
+          type: string
+          example: "Users"
       required:
         - name
         - uri_mask
+        - actions_mask
+        - res_group
     GetResource:
       type: object
       properties:
@@ -1112,47 +967,33 @@ components:
           example: "2022-12-12T13:36:18.0354Z"
         name:
           type: string
-          example: "Renew user"
+          example: "Recovery user"
         uri_mask:
           type: string
-          example: "/users/\\d+/renew"
-
-    AddAction:
+          example: "/users/\\d+/recovery"
+        actions_mask:
+          type: string
+          example: "1100"
+        is_active:
+          type: boolean
+          example: true
+        res_group:
+          type: string
+          example: "Users"
+    SearchResource:
       type: object
       properties:
         name:
           type: string
-          example: "Merchant manager"
-        method:
-          type: string
-          example: "POST"
-      required:
-        - name
-        - method
-    GetAction:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          example: 10
-        created_at:
-          type: string
-          example: "2022-12-12T13:36:18.0354Z"
-        name:
-          type: string
-          example: "Merchant manager"
-        method:
-          type: string
-          example: "POST"
+          example: "Users"
+        resources:
+          type: array
+          items:
+            $ref: '#/components/schemas/GetResource'
 
     AddPermission:
       type: object
       properties:
-        action_id:
-          type: integer
-          format: int64
-          example: 10
         resource_id:
           type: integer
           format: int64
@@ -1171,10 +1012,6 @@ components:
           type: integer
           format: int64
           example: 10
-        action_id:
-          type: integer
-          format: int64
-          example: 10
         resource_id:
           type: integer
           format: int64
@@ -1184,10 +1021,6 @@ components:
       type: object
       properties:
         user_id:
-          type: integer
-          format: int64
-          example: 10
-        action_id:
           type: integer
           format: int64
           example: 10
@@ -1213,8 +1046,6 @@ components:
           example: "2022-12-12T13:36:18.0354Z"
         user:
           "$ref": "#/components/schemas/GetUser"
-        action:
-          "$ref": "#/components/schemas/GetAction"
         resource:
           "$ref": "#/components/schemas/GetResource"
         request_data:

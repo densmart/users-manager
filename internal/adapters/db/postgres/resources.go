@@ -34,7 +34,8 @@ func (r *ResourcesPostgres) Create(data dto.CreateResourceDTO) (entities.Resourc
 		return resource, err
 	}
 	row := conn.QueryRow(r.db.Ctx, query)
-	if err = row.Scan(&resource.Id, &resource.CreatedAt, &resource.Name, &resource.UriMask); err != nil {
+	if err = row.Scan(&resource.Id, &resource.CreatedAt, &resource.Name, &resource.UriMask, &resource.MethodMask,
+		&resource.IsActive, &resource.ResGroup); err != nil {
 		return resource, err
 	}
 	return resource, nil
@@ -53,7 +54,8 @@ func (r *ResourcesPostgres) Update(data dto.UpdateResourceDTO) (entities.Resourc
 		return resource, err
 	}
 	row := conn.QueryRow(r.db.Ctx, query)
-	if err = row.Scan(&resource.Id, &resource.CreatedAt, &resource.Name, &resource.UriMask); err != nil {
+	if err = row.Scan(&resource.Id, &resource.CreatedAt, &resource.Name, &resource.UriMask, &resource.MethodMask,
+		&resource.IsActive, &resource.ResGroup); err != nil {
 		return resource, err
 	}
 	return resource, nil
@@ -72,7 +74,8 @@ func (r *ResourcesPostgres) Retrieve(id uint64) (entities.Resource, error) {
 		return resource, err
 	}
 	row := conn.QueryRow(r.db.Ctx, query)
-	if err = row.Scan(&resource.Id, &resource.CreatedAt, &resource.UpdatedAt, &resource.Name, &resource.UriMask); err != nil {
+	if err = row.Scan(&resource.Id, &resource.CreatedAt, &resource.Name, &resource.UriMask, &resource.MethodMask,
+		&resource.IsActive, &resource.ResGroup); err != nil {
 		return resource, err
 	}
 	return resource, nil
@@ -96,7 +99,8 @@ func (r *ResourcesPostgres) Search(data dto.SearchResourceDTO) ([]entities.Resou
 	}
 	for rows.Next() {
 		var resource entities.Resource
-		if err = rows.Scan(&resource.Id, &resource.CreatedAt, &resource.UpdatedAt, &resource.Name, &resource.UriMask); err != nil {
+		if err = rows.Scan(&resource.Id, &resource.CreatedAt, &resource.Name, &resource.UriMask, &resource.MethodMask,
+			&resource.IsActive, &resource.ResGroup); err != nil {
 			return resources, err
 		}
 		resources = append(resources, resource)
@@ -125,12 +129,18 @@ func (r *ResourcesPostgres) Delete(id uint64) error {
 func createResourceQuery(data dto.CreateResourceDTO) (string, error) {
 	dialect := goqu.Dialect("postgres")
 	data2insert := goqu.Record{
-		"created_at": time.Now(),
-		"updated_at": time.Now(),
-		"name":       data.Name,
-		"uri_mask":   data.UriMask,
+		"created_at":  time.Now(),
+		"updated_at":  time.Now(),
+		"name":        data.Name,
+		"uri_mask":    data.UriMask,
+		"method_mask": data.MethodMask,
+		"is_active":   data.IsActive,
 	}
-	ds := dialect.Insert(resourcesTable).Rows(data2insert).Returning("id", "created_at", "name", "uri_mask")
+	if data.ResGroup != nil {
+		data2insert["res_group"] = data.ResGroup
+	}
+	ds := dialect.Insert(resourcesTable).Rows(data2insert).Returning("id", "created_at", "name", "uri_mask",
+		"method_mask", "is_active", "res_group")
 
 	return toSQL(ds)
 }
@@ -145,14 +155,24 @@ func updateResourceQuery(data dto.UpdateResourceDTO) (string, error) {
 	if data.UriMask != nil {
 		record["uri_mask"] = data.UriMask
 	}
-	ds = ds.Set(record).Where(goqu.Ex{"id": data.ID}).Returning("id", "created_at", "name", "uri_mask")
+	if data.MethodMask != nil {
+		record["method_mask"] = data.MethodMask
+	}
+	if data.IsActive != nil {
+		record["is_active"] = data.IsActive
+	}
+	if data.ResGroup != nil {
+		record["res_group"] = data.ResGroup
+	}
+	ds = ds.Set(record).Where(goqu.Ex{"id": data.ID}).Returning("id", "created_at", "name", "uri_mask",
+		"method_mask", "is_active", "res_group")
 
 	return toSQL(ds)
 }
 
 func retrieveResourceQuery(id uint64) (string, error) {
 	dialect := goqu.Dialect("postgres")
-	ds := dialect.Select("id", "created_at", "updated_at", "name", "uri_mask").From(
+	ds := dialect.Select("id", "created_at", "name", "uri_mask", "method_mask", "is_active", "res_group").From(
 		resourcesTable).Where(goqu.Ex{"id": id})
 
 	return toSQL(ds)
@@ -160,8 +180,11 @@ func retrieveResourceQuery(id uint64) (string, error) {
 
 func searchResourceQuery(data dto.SearchResourceDTO) (string, error) {
 	dialect := goqu.Dialect("postgres")
-	ds := dialect.Select("id", "created_at", "updated_at", "name", "uri_mask").From(resourcesTable)
-
+	ds := dialect.Select("id", "created_at", "name", "uri_mask", "method_mask", "is_active",
+		"res_group").From(resourcesTable)
+	if data.ID != nil {
+		ds = ds.Where(goqu.Ex{"id": *data.ID})
+	}
 	if data.Name != nil {
 		ds = ds.Where(goqu.Ex{
 			"name": goqu.Op{"like": *data.Name},
@@ -172,13 +195,13 @@ func searchResourceQuery(data dto.SearchResourceDTO) (string, error) {
 			"name": goqu.Op{"uri_mask": *data.UriMask},
 		})
 	}
-	if data.ID != nil {
-		ds = ds.Where(goqu.Ex{"id": *data.ID})
+	if data.IsActive != nil {
+		ds = ds.Where(goqu.Ex{"is_active": *data.IsActive})
 	}
 
 	ds = filterByCreatedAt(ds, data.CreatedAtFrom, data.CreatedAtTo)
 	ds = ordering(ds, data.OrderBy)
-	ds = slicing(ds, data.Offset, data.Limit)
+	//ds = slicing(ds, data.Offset, data.Limit)
 
 	return toSQL(ds)
 }

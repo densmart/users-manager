@@ -51,7 +51,7 @@ CREATE TABLE "resources" (
      "updated_at" timestamptz,
      "name" varchar(128),
      "uri_mask" varchar(512),
-     "method_mask" int, -- byte mask of HTTP METHODS
+     "method_mask" int, -- bitmask of HTTP METHODS
      "is_active" boolean DEFAULT false,
      "res_group" varchar(128), -- group resource by specific name
      PRIMARY KEY ("id")
@@ -71,17 +71,13 @@ VALUES (now(), now(), 'Roles', '/roles', 12, true, 'Roles');
 INSERT INTO "resources" (created_at, updated_at, name, uri_mask, method_mask, is_active, res_group)
 VALUES (now(), now(), 'Role', '/roles/\d+', 11, true, 'Roles');
 INSERT INTO "resources" (created_at, updated_at, name, uri_mask, method_mask, is_active, res_group)
-VALUES (now(), now(), 'Actions', '/actions', 12, true, 'Actions');
+VALUES (now(), now(), 'Role permissions', '/roles/\d+/permissions', 12, true, 'Permissions');
 INSERT INTO "resources" (created_at, updated_at, name, uri_mask, method_mask, is_active, res_group)
-VALUES (now(), now(), 'Action', '/actions/\d+', 11, true, 'Actions');
+VALUES (now(), now(), 'Role permission', '/roles/\d+/permissions/\d+', 11, true, 'Permissions');
 INSERT INTO "resources" (created_at, updated_at, name, uri_mask, method_mask, is_active, res_group)
 VALUES (now(), now(), 'Resources', '/resources', 12, true, 'Resources');
 INSERT INTO "resources" (created_at, updated_at, name, uri_mask, method_mask, is_active, res_group)
 VALUES (now(), now(), 'Resource', '/resources/\d+', 11, true, 'Resources');
-INSERT INTO "resources" (created_at, updated_at, name, uri_mask, method_mask, is_active, res_group)
-VALUES (now(), now(), 'Permissions', '/permissions', 12, true, 'Permissions');
-INSERT INTO "resources" (created_at, updated_at, name, uri_mask, method_mask, is_active, res_group)
-VALUES (now(), now(), 'Permission', '/permissions/\d+', 11, true, 'Permissions');
 
 CREATE TABLE "permissions" (
     "id" bigserial,
@@ -89,6 +85,7 @@ CREATE TABLE "permissions" (
     "updated_at" timestamptz,
     "role_id" bigint,
     "resource_id" bigint,
+    "method_mask" int, -- bitmask of available HTTP METHODS
     PRIMARY KEY ("id")
 );
 CREATE UNIQUE INDEX role_action_resource_unique ON "permissions" ("role_id", "resource_id");

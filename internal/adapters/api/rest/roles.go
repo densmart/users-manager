@@ -15,7 +15,7 @@ func (h *RestRouter) createRole(c *gin.Context) {
 	var data dto.CreateRoleDTO
 
 	if err := c.BindJSON(&data); err != nil {
-		ErrorResponse(c, 400, err.Error())
+		ErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 

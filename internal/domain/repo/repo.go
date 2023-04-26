@@ -36,18 +36,27 @@ type Users interface {
 	Delete(id uint64) error
 }
 
+type Permissions interface {
+	Create(data []dto.CreatePermissionDTO) ([]entities.Permission, error)
+	Update(data []dto.UpdatePermissionDTO) ([]entities.Permission, error)
+	Search(data dto.SearchPermissionDTO) ([]entities.Permission, error)
+	Delete(ids []uint64) error
+}
+
 type Repo struct {
 	Migrator
 	Roles
 	Resources
 	Users
+	Permissions
 }
 
 func NewRepo(db *db.WrapperDB) *Repo {
 	return &Repo{
-		Migrator:  postgres.NewMigratorPostgres(db),
-		Roles:     postgres.NewRolesPostgres(db),
-		Resources: postgres.NewResourcesPostgres(db),
-		Users:     postgres.NewUsersPostgres(db),
+		Migrator:    postgres.NewMigratorPostgres(db),
+		Roles:       postgres.NewRolesPostgres(db),
+		Resources:   postgres.NewResourcesPostgres(db),
+		Users:       postgres.NewUsersPostgres(db),
+		Permissions: postgres.NewPermissionsPostgres(db),
 	}
 }

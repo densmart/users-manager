@@ -35,18 +35,27 @@ type Users interface {
 	Delete(id uint64) error
 }
 
+type Permissions interface {
+	Create(data []dto.CreatePermissionDTO) ([]entities.Permission, error)
+	Update(data []dto.UpdatePermissionDTO) ([]entities.Permission, error)
+	Search(data dto.SearchPermissionDTO) ([]entities.Permission, error)
+	Delete(id []uint64) error
+}
+
 type Service struct {
 	Migrator
 	Roles
 	Resources
 	Users
+	Permissions
 }
 
 func NewService(repo *repo.Repo) *Service {
 	return &Service{
-		Migrator:  NewMigratorService(repo.Migrator),
-		Roles:     NewRolesService(repo.Roles),
-		Resources: NewResourcesService(repo.Resources),
-		Users:     NewUsersService(repo.Users),
+		Migrator:    NewMigratorService(repo.Migrator),
+		Roles:       NewRolesService(repo.Roles),
+		Resources:   NewResourcesService(repo.Resources),
+		Users:       NewUsersService(repo.Users),
+		Permissions: NewPermissionsService(repo.Permissions),
 	}
 }

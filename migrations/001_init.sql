@@ -89,8 +89,8 @@ CREATE TABLE "permissions" (
     PRIMARY KEY ("id")
 );
 CREATE UNIQUE INDEX role_action_resource_unique ON "permissions" ("role_id", "resource_id");
-ALTER TABLE "permissions" ADD FOREIGN KEY ("role_id") REFERENCES "roles" ("id");
-ALTER TABLE "permissions" ADD FOREIGN KEY ("resource_id") REFERENCES "resources" ("id");
+ALTER TABLE "permissions" ADD FOREIGN KEY ("role_id") REFERENCES "roles" ("id") ON DELETE CASCADE;
+ALTER TABLE "permissions" ADD FOREIGN KEY ("resource_id") REFERENCES "resources" ("id") ON DELETE CASCADE;
 
 CREATE TABLE "journal" (
     "id" bigserial,

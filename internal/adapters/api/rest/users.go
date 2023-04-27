@@ -75,7 +75,11 @@ func (h *RestRouter) searchUsers(c *gin.Context) {
 	}
 
 	c.Header("Link", users.Pagination)
-	SuccessResponse(c, users)
+	if len(users.Items) <= 0 {
+		SuccessResponse(c, make([]string, 0))
+		return
+	}
+	SuccessResponse(c, users.Items)
 }
 
 func (h *RestRouter) updateUser(c *gin.Context) {

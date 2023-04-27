@@ -10,84 +10,13 @@ import (
 	"strconv"
 )
 
-func (h *RestRouter) createRole(c *gin.Context) {
+func (h *RestRouter) createPermissions(c *gin.Context) {
 	var apiErr *dto.APIError
-	var data dto.CreateRoleDTO
-
-	if err := c.BindJSON(&data); err != nil {
-		ErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	result, err := usecases.CreateRole(*h.service, data)
-	if err != nil {
-		if errors.As(err, &apiErr) {
-			ErrorResponse(c, apiErr.HttpCode, err.Error())
-			return
-		}
-		ErrorResponse(c, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	SuccessResponse(c, result)
-}
-
-func (h *RestRouter) retrieveRole(c *gin.Context) {
-	var apiErr *dto.APIError
-	roleID, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		ErrorResponse(c, http.StatusBadRequest, "incorrect query string")
-		return
-	}
-
-	result, err := usecases.RetrieveRole(*h.service, uint64(roleID))
-	if err != nil {
-		if errors.As(err, &apiErr) {
-			ErrorResponse(c, apiErr.HttpCode, err.Error())
-			return
-		}
-		ErrorResponse(c, http.StatusInternalServerError, err.Error())
-	}
-
-	SuccessResponse(c, result)
-}
-
-func (h *RestRouter) searchRoles(c *gin.Context) {
-	var apiErr *dto.APIError
-	var data dto.SearchRoleDTO
-
-	if err := c.ShouldBindWith(&data, binding.Form); err != nil {
-		ErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	data.RawURL = c.Request.URL.String()
-
-	roles, err := usecases.SearchRoles(*h.service, data)
-	if err != nil {
-		if errors.As(err, &apiErr) {
-			ErrorResponse(c, apiErr.HttpCode, err.Error())
-			return
-		}
-		ErrorResponse(c, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	c.Header("Link", roles.Pagination)
-	if len(roles.Items) <= 0 {
-		SuccessResponse(c, make([]string, 0))
-		return
-	}
-	SuccessResponse(c, roles.Items)
-}
-
-func (h *RestRouter) updateRole(c *gin.Context) {
-	var apiErr *dto.APIError
-	var data dto.UpdateRoleDTO
+	var data []dto.CreatePermissionDTO
 
 	roleID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		ErrorResponse(c, http.StatusBadRequest, "incorrect query string")
+		ErrorResponse(c, http.StatusBadRequest, "role ID not specified")
 		return
 	}
 
@@ -96,9 +25,67 @@ func (h *RestRouter) updateRole(c *gin.Context) {
 		return
 	}
 
-	data.ID = uint64(roleID)
+	for idx, _ := range data {
+		data[idx].RoleID = uint64(roleID)
+	}
 
-	role, err := usecases.UpdateRole(*h.service, data)
+	result, err := usecases.CreatePermissions(*h.service, data)
+	if err != nil {
+		if errors.As(err, &apiErr) {
+			ErrorResponse(c, apiErr.HttpCode, err.Error())
+			return
+		}
+		ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	SuccessResponse(c, result)
+}
+
+func (h *RestRouter) searchPermissions(c *gin.Context) {
+	var apiErr *dto.APIError
+	var data dto.SearchPermissionDTO
+	roleID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		ErrorResponse(c, http.StatusBadRequest, "role ID not specified")
+		return
+	}
+	if err = c.ShouldBindWith(&data, binding.Form); err != nil {
+		ErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	data.RawURL = c.Request.URL.String()
+	data.RoleID = uint64(roleID)
+
+	perms, err := usecases.SearchPermissions(*h.service, data)
+	if err != nil {
+		if errors.As(err, &apiErr) {
+			ErrorResponse(c, apiErr.HttpCode, err.Error())
+			return
+		}
+		ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.Header("Link", perms.Pagination)
+	if len(perms.Items) <= 0 {
+		SuccessResponse(c, make([]string, 0))
+		return
+	}
+	SuccessResponse(c, perms.Items)
+}
+
+func (h *RestRouter) updatePermissions(c *gin.Context) {
+	var apiErr *dto.APIError
+	var data []dto.UpdatePermissionDTO
+
+	if err := c.BindJSON(&data); err != nil {
+		ErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	role, err := usecases.UpdatePermissions(*h.service, data)
 	if err != nil {
 		if errors.As(err, &apiErr) {
 			ErrorResponse(c, apiErr.HttpCode, err.Error())
@@ -111,15 +98,15 @@ func (h *RestRouter) updateRole(c *gin.Context) {
 	SuccessResponse(c, role)
 }
 
-func (h *RestRouter) deleteRole(c *gin.Context) {
+func (h *RestRouter) deletePermissions(c *gin.Context) {
 	var apiErr *dto.APIError
-	roleID, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		ErrorResponse(c, http.StatusBadRequest, "role ID not specified")
+	var data []uint64
+	if err := c.BindJSON(&data); err != nil {
+		ErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	if err = usecases.DeleteRole(*h.service, uint64(roleID)); err != nil {
+	if err := usecases.DeletePermissions(*h.service, data); err != nil {
 		if errors.As(err, &apiErr) {
 			ErrorResponse(c, apiErr.HttpCode, err.Error())
 			return

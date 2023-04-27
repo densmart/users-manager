@@ -7,6 +7,7 @@ import (
 	"github.com/densmart/users-manager/internal/logger"
 	"github.com/doug-martin/goqu/v9"
 	"github.com/jackc/pgx/v4"
+	"time"
 )
 
 const (
@@ -42,6 +43,7 @@ func (r *PermissionsPostgres) Create(data []dto.CreatePermissionDTO) ([]entities
 		var permission entities.Permission
 		if err = rows.Scan(&permission.Id, &permission.CreatedAt, &permission.RoleID, &permission.ResourceID,
 			&permission.MethodMask); err != nil {
+			logger.Errorf(err.Error())
 			return nil, err
 		}
 		permissions = append(permissions, permission)
@@ -137,6 +139,8 @@ func createPermissionsQuery(data []dto.CreatePermissionDTO) (string, error) {
 	var data2insert []goqu.Record
 	for _, item := range data {
 		row := goqu.Record{
+			"created_at":  time.Now(),
+			"updated_at":  time.Now(),
 			"role_id":     item.RoleID,
 			"resource_id": item.ResourceID,
 			"method_mask": item.MethodMask,
@@ -152,7 +156,7 @@ func updatePermissionsQuery(data dto.UpdatePermissionDTO) (string, error) {
 	dialect := goqu.Dialect("postgres")
 	ds := dialect.Update(permissionsTable)
 	record := goqu.Record{}
-	if data.MethodMask != nil {
+	if data.MethodMask != 0 {
 		record["method_mask"] = data.MethodMask
 	}
 	ds = ds.Set(record).Where(goqu.Ex{"id": data.ID}).Returning("id", "created_at", "role_id",
@@ -163,7 +167,8 @@ func updatePermissionsQuery(data dto.UpdatePermissionDTO) (string, error) {
 
 func searchPermissionsQuery(data dto.SearchPermissionDTO) (string, error) {
 	dialect := goqu.Dialect("postgres")
-	ds := dialect.Select("id", "created_at", "role_id", "resource_id", "method_mask").From(permissionsTable).Where(goqu.Ex{"id": data.RoleID})
+	ds := dialect.Select("id", "created_at", "role_id",
+		"resource_id", "method_mask").From(permissionsTable).Where(goqu.Ex{"role_id": data.RoleID})
 	if data.ResourceID != nil {
 		ds = ds.Where(goqu.Ex{"resource_id": *data.ResourceID})
 	}

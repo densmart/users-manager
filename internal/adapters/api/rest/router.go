@@ -30,6 +30,14 @@ func (h *RestRouter) InitRoutes() *gin.Engine {
 			roles.GET("/", h.searchRoles)
 			roles.PATCH("/:id", h.updateRole)
 			roles.DELETE("/:id", h.deleteRole)
+
+			permissions := roles.Group(":id/permissions")
+			{
+				permissions.POST("/", h.createPermissions)
+				permissions.GET("/", h.searchPermissions)
+				permissions.PATCH("/", h.updatePermissions)
+				permissions.DELETE("/", h.deletePermissions)
+			}
 		}
 
 		resources := v1.Group("/resources", h.JWTAuthMiddleware)

@@ -42,7 +42,7 @@ func (r *PermissionsPostgres) Create(data []dto.CreatePermissionDTO) ([]entities
 	for rows.Next() {
 		var permission entities.Permission
 		if err = rows.Scan(&permission.Id, &permission.CreatedAt, &permission.RoleID, &permission.ResourceID,
-			&permission.MethodMask); err != nil {
+			&permission.MethodMask, &permission.ResourceURIMask, &permission.ResourceMethodMask); err != nil {
 			logger.Errorf(err.Error())
 			return nil, err
 		}
@@ -167,8 +167,14 @@ func updatePermissionsQuery(data dto.UpdatePermissionDTO) (string, error) {
 
 func searchPermissionsQuery(data dto.SearchPermissionDTO) (string, error) {
 	dialect := goqu.Dialect("postgres")
-	ds := dialect.Select("id", "created_at", "role_id",
-		"resource_id", "method_mask").From(permissionsTable).Where(goqu.Ex{"role_id": data.RoleID})
+	ds := dialect.Select("p.id", "p.created_at", "p.role_id",
+		"p.resource_id", "p.method_mask", goqu.I("r.uri_mask").As("resource_uri_mask"),
+		goqu.I("r.method_mask").As("resource_method_mask")).Join(
+		goqu.T(resourcesTable).As("r"),
+		goqu.On(goqu.Ex{"p.resource_id": goqu.I("r.id")}),
+	).From(
+		permissionsTable,
+	).Where(goqu.Ex{"role_id": data.RoleID})
 	if data.ResourceID != nil {
 		ds = ds.Where(goqu.Ex{"resource_id": *data.ResourceID})
 	}

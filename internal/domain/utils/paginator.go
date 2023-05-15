@@ -9,7 +9,7 @@ import (
 
 const (
 	defaultPerPage = 100
-	maxPerPage     = 500
+	maxPerPage     = 1000
 )
 
 type Paginator struct {

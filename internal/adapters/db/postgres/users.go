@@ -177,6 +177,9 @@ func updateUserQuery(data dto.UpdateUserDTO) (string, error) {
 	if data.Password != nil {
 		record["password"] = data.Password
 	}
+	if data.LastLoginAt != nil {
+		record["last_login_at"] = data.LastLoginAt
+	}
 	ds = ds.Set(record).Where(goqu.Ex{"id": data.ID}).Returning("id", "created_at", "updated_at", "email",
 		"first_name", "last_name", "phone", "is_active", "is_2fa", "role_id", "password", "token_2fa")
 

@@ -3,6 +3,8 @@ module github.com/densmart/users-manager
 go 1.19
 
 require (
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/dgryski/dgoogauth v0.0.0-20190221195224-5a805980a5f3
 	github.com/doug-martin/goqu/v9 v9.18.0
 	github.com/gin-gonic/gin v1.8.2
 	github.com/jackc/pgconn v1.13.0

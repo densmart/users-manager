@@ -1,8 +1,7 @@
 package utils
 
 import (
-	"crypto/rand"
-	"encoding/base32"
+	"github.com/densmart/users-manager/internal/logger"
 	"golang.org/x/crypto/bcrypt"
 	"math"
 	"strconv"
@@ -25,14 +24,14 @@ func GeneratePasswordHash(password string) (string, error) {
 	return string(hashedPassword), nil
 }
 
-// Create2FASecret Create random string secret for 2 factor authenticator app
-func Create2FASecret() (string, error) {
-	secret := make([]byte, 10)
-	_, err := rand.Read(secret)
-	if err != nil {
-		return "", err
+// CheckPasswordHash Check user's password in login step
+func CheckPasswordHash(hash, password string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	if err == nil {
+		logger.Errorf(err.Error())
+		return true
 	}
-	return base32.StdEncoding.EncodeToString(secret), nil
+	return false
 }
 
 // BinaryStringToDecimal Convert binary string like "10111" to decimal number

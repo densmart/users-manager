@@ -31,6 +31,7 @@ type Users interface {
 	Create(data dto.CreateUserDTO) (entities.User, error)
 	Update(data dto.UpdateUserDTO) (entities.User, error)
 	Retrieve(id uint64) (entities.User, error)
+	RetrieveByEmail(email string) (entities.User, error)
 	Search(data dto.SearchUserDTO) ([]entities.User, error)
 	Delete(id uint64) error
 }
@@ -42,12 +43,22 @@ type Permissions interface {
 	Delete(id []uint64) error
 }
 
+type Auth interface {
+	GetAPIKey() string
+	CleanAPIKey()
+	RenewAPIKey()
+	AddDisconnectedUser(id uint64)
+	CheckDisconnectedUser(id uint64) bool
+	RemoveDisconnectedUser(id uint64)
+}
+
 type Service struct {
 	Migrator
 	Roles
 	Resources
 	Users
 	Permissions
+	Auth
 }
 
 func NewService(repo *repo.Repo) *Service {
@@ -57,5 +68,6 @@ func NewService(repo *repo.Repo) *Service {
 		Resources:   NewResourcesService(repo.Resources),
 		Users:       NewUsersService(repo.Users),
 		Permissions: NewPermissionsService(repo.Permissions),
+		Auth:        NewAuthService(),
 	}
 }

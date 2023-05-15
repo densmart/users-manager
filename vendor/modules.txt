@@ -7,6 +7,12 @@ github.com/Masterminds/semver
 # github.com/Masterminds/sprig v2.22.0+incompatible
 ## explicit
 github.com/Masterminds/sprig
+# github.com/dgrijalva/jwt-go v3.2.0+incompatible
+## explicit
+github.com/dgrijalva/jwt-go
+# github.com/dgryski/dgoogauth v0.0.0-20190221195224-5a805980a5f3
+## explicit
+github.com/dgryski/dgoogauth
 # github.com/doug-martin/goqu/v9 v9.18.0
 ## explicit; go 1.12
 github.com/doug-martin/goqu/v9

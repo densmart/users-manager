@@ -27,11 +27,11 @@ func InitConfig() {
 }
 
 func getEnvOrPanic(env string) string {
-	if !strings.Contains(env, ":") {
-		log.Fatalf("Log format variable %s is incorrect. ':' missing", env)
+	if !strings.Contains(env, "|") {
+		log.Fatalf("Log format variable %s is incorrect. '|' missing", env)
 	}
 
-	varSplit := strings.Split(env, ":")
+	varSplit := strings.Split(env, "|")
 	envVar := varSplit[0]
 	defaultVar := varSplit[1]
 

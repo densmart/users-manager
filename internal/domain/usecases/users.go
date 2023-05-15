@@ -18,7 +18,7 @@ func CreateUser(s services.Service, data dto.CreateUserDTO) (*dto.UserDTO, error
 	originalPwd := data.Password
 	data.Password = pwdHash
 	// create random OTP secret
-	data.Token2fa, err = utils.Create2FASecret()
+	data.Token2fa, err = utils.CreateOtpSecret()
 	if err != nil {
 		return nil, err
 	}

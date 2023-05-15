@@ -23,6 +23,12 @@ func (h *RestRouter) InitRoutes() *gin.Engine {
 
 	v1 := router.Group("/v1")
 	{
+		auth := v1.Group("/auth")
+		{
+			auth.POST("/signin", h.signIn)
+			auth.POST("/refresh", h.refresh)
+			auth.POST("/otp", h.checkOtp)
+		}
 		roles := v1.Group("/roles", h.JWTAuthMiddleware)
 		{
 			roles.POST("/", h.createRole)

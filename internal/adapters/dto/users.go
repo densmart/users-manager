@@ -1,5 +1,7 @@
 package dto
 
+import "time"
+
 type CreateUserDTO struct {
 	Email     string `json:"email"`
 	FirstName string `json:"first_name"`
@@ -13,15 +15,16 @@ type CreateUserDTO struct {
 }
 
 type UpdateUserDTO struct {
-	ID        uint64
-	Email     *string `json:"email,omitempty"`
-	FirstName *string `json:"first_name,omitempty"`
-	LastName  *string `json:"last_name,omitempty"`
-	Phone     *string `json:"phone,omitempty"`
-	IsActive  *bool   `json:"is_active,omitempty"`
-	Is2fa     *bool   `json:"is_2fa,omitempty"`
-	RoleID    *uint64 `json:"role_id,omitempty"`
-	Password  *string
+	ID          uint64
+	Email       *string `json:"email,omitempty"`
+	FirstName   *string `json:"first_name,omitempty"`
+	LastName    *string `json:"last_name,omitempty"`
+	Phone       *string `json:"phone,omitempty"`
+	IsActive    *bool   `json:"is_active,omitempty"`
+	Is2fa       *bool   `json:"is_2fa,omitempty"`
+	RoleID      *uint64 `json:"role_id,omitempty"`
+	LastLoginAt *time.Time
+	Password    *string
 }
 
 type SearchUserDTO struct {
